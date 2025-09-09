@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ titolo }}</h2>
+
+{% if classifica %}
+    <ol>
+    {% for g in classifica %}
+        {% if tipo == "voto" %}
+            <li>{{ g[0] }} - {{ "%.2f"|format(g[5]) }}</li>
+        {% elif tipo == "gol" %}
+            <li>{{ g[0] }} - {{ g[1] }} gol</li>
+        {% elif tipo == "giocate" %}
+            <li>{{ g[0] }} - {{ g[2] }} partite</li>
+        {% elif tipo == "vinte" %}
+            <li>{{ g[0] }} - {{ g[3] }} vinte</li>
+        {% elif tipo == "perse" %}
+            <li>{{ g[0] }} - {{ g[4] }} perse</li>
+        {% endif %}
+    {% endfor %}
+    </ol>
+{% else %}
+    <p>Nessun dato disponibile per questa classifica.</p>
+{% endif %}
+{% endblock %}

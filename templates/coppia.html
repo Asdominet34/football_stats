@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiche di Coppia{% endblock %}
+
+{% block content %}
+  <h2>Statistiche di Coppia</h2>
+
+  <!-- Form scelta giocatori -->
+  <form method="get" action="/coppia" class="form-coppia">
+    <label for="g1">Giocatore 1:</label>
+    <select name="g1" id="g1">
+      {% for g in giocatori %}
+        <option value="{{ g }}" {% if g == g1 %}selected{% endif %}>{{ g }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="g2">Giocatore 2:</label>
+    <select name="g2" id="g2">
+      {% for g in giocatori %}
+        <option value="{{ g }}" {% if g == g2 %}selected{% endif %}>{{ g }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit">Mostra statistiche</button>
+  </form>
+
+  {% if stats %}
+    <h3>Risultati per {{ stats.giocatore1 }} + {{ stats.giocatore2 }}</h3>
+    <ul>
+      <li>Partite giocate insieme: {{ stats.partite_insieme }}</li>
+      <li>Vittorie insieme: {{ stats.vittorie }} ({{ stats.percentuale_vittorie }}%)</li>
+      <li>Media Gol di {{ stats.giocatore1 }} con {{ stats.giocatore2 }}: {{ stats.media_gol_insieme[0] }}</li>
+      <li>Media Gol di {{ stats.giocatore2 }} con {{ stats.giocatore1 }}: {{ stats.media_gol_insieme[1] }}</li>
+    </ul>
+
+    <h4>Confronto senza l’altro:</h4>
+    <ul>
+      <li>{{ stats.giocatore1 }} senza {{ stats.giocatore2 }}:
+        Vittorie {{ stats.stats_no_insieme1[0] }}%, Media Gol {{ stats.stats_no_insieme1[1] }}
+      </li>
+      <li>{{ stats.giocatore2 }} senza {{ stats.giocatore1 }}:
+        Vittorie {{ stats.stats_no_insieme2[0] }}%, Media Gol {{ stats.stats_no_insieme2[1] }}
+      </li>
+    </ul>
+  {% elif g1 and g2 %}
+    <p>Nessuna partita trovata per questa coppia.</p>
+  {% endif %}
+{% endblock %}

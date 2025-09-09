@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="mb-4">Lista Giocatori</h1>
+    {% if giocatori %}
+        <ul class="list-group">
+            {% for g in giocatori %}
+                <li class="list-group-item">
+                    <a href="/giocatore?nome={{ g }}">{{ g }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Nessun giocatore registrato.</p>
+    {% endif %}
+{% endblock %}

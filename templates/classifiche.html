@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="mb-4">{{ titolo }}</h1>
+    {% if classifica %}
+        <ol class="list-group list-group-numbered">
+            {% for voce in classifica %}
+                <li class="list-group-item">{{ voce }}</li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <p class="text-muted">Nessun dato disponibile per questa classifica.</p>
+    {% endif %}
+{% endblock %}

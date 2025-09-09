@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if stats %}
+        <h1 class="mb-4">Statistiche di {{ stats.nome }}</h1>
+        <ul class="list-group">
+            <li class="list-group-item">Gol totali: {{ stats.gol_totali }}</li>
+            <li class="list-group-item">Partite giocate: {{ stats.partite_giocate }}</li>
+            <li class="list-group-item">Vittorie: {{ stats.partite_vinte }}</li>
+            <li class="list-group-item">Pareggi: {{ stats.partite_pareggiate }}</li>
+            <li class="list-group-item">Sconfitte: {{ stats.partite_perse }}</li>
+            <li class="list-group-item">Media voto: {{ stats.media_voto }}</li>
+            <li class="list-group-item">% Vittorie: {{ stats.percentuale_vittorie }}%</li>
+        </ul>
+    {% else %}
+        <p class="text-muted">Nessuna statistica trovata per il giocatore richiesto.</p>
+    {% endif %}
+{% endblock %}
