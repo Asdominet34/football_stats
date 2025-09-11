@@ -2,17 +2,37 @@
 
 {% block content %}
     {% if stats %}
-        <h1 class="mb-4">Statistiche di {{ stats.nome }}</h1>
-        <ul class="list-group">
-            <li class="list-group-item">Gol totali: {{ stats.gol_totali }}</li>
-            <li class="list-group-item">Partite giocate: {{ stats.partite_giocate }}</li>
-            <li class="list-group-item">Vittorie: {{ stats.partite_vinte }}</li>
-            <li class="list-group-item">Pareggi: {{ stats.partite_pareggiate }}</li>
-            <li class="list-group-item">Sconfitte: {{ stats.partite_perse }}</li>
-            <li class="list-group-item">Media voto: {{ stats.media_voto }}</li>
-            <li class="list-group-item">% Vittorie: {{ stats.percentuale_vittorie }}%</li>
-        </ul>
+    <div class="row">
+        <!-- COLONNA SINISTRA: STATISTICHE -->
+        <div class="col-md-8">
+            <h1 class="mb-4">Statistiche di {{ stats.nome }}</h1>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    Partite giocate: {{ stats.partite_giocate }}
+                    <span class="text-muted">
+                        ({{ stats.partite_vinte }}V, {{ stats.partite_pareggiate }}P, {{ stats.partite_perse }}S)
+                    </span>
+                </li>
+                <li class="list-group-item">% Vittorie: {{ stats.percentuale_vittorie }}%</li>
+                <li class="list-group-item">Gol totali: {{ stats.gol_totali }}</li>
+                <li class="list-group-item">Media gol individuali: {{ stats.media_gol }}</li>
+                <li class="list-group-item">Media gol fatti squadra: {{ stats.media_gol_fatti_squadra }}</li>
+                <li class="list-group-item">Media gol subiti squadra: {{ stats.media_gol_subiti_squadra }}</li>
+                <li class="list-group-item">Media voto: {{ stats.media_voto }}</li>
+            </ul>
+        </div>
+
+        <!-- COLONNA DESTRA: FOTO GIOCATORE -->
+        <div class="col-md-4 d-flex align-items-center justify-content-center">
+            <img src="{{ url_for('static', filename=stats.foto) }}" 
+                 alt="Foto di {{ stats.nome }}" 
+                 class="img-fluid rounded-circle shadow-sm" 
+                 style="max-width: 250px;">
+        </div>
+    </div>
     {% else %}
         <p class="text-muted">Nessuna statistica trovata per il giocatore richiesto.</p>
     {% endif %}
 {% endblock %}
+
+

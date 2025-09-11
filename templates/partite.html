@@ -1,17 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="mb-4">Partite Registrate</h1>
-    {% if partite %}
-        <ul class="list-group">
-            {% for p in partite %}
-                <li class="list-group-item">
-                    <strong>{{ p.data }}</strong> - {{ p.luogo }} |
-                    Chiari {{ p.gol_chiari }} - {{ p.gol_scuri }} Scuri
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-muted">Nessuna partita registrata.</p>
-    {% endif %}
+<h1>Partite Registrate</h1>
+<ul class="list-group">
+    {% for p in partite %}
+    <li class="list-group-item">
+        <a href="/partita/{{ p.id }}" class="text-decoration-none">
+            {{ p.data }} – {{ p.luogo }} |
+            Chiari {{ p.gol_chiari }} - {{ p.gol_scuri }} Scuri
+        </a>
+    </li>
+    {% endfor %}
+</ul>
 {% endblock %}

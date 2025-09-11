@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Dettaglio Partita{% endblock %}
+
+{% block content %}
+<div class="partita-dettaglio container">
+
+    <!-- Titolo, punteggio e squadre -->
+    <div class="text-center my-4">
+        <h2 class="fw-bold display-5">
+            <span class="text-primary">Squadra Chiari</span>
+            {{ partita[3] }} - {{ partita[4] }}
+            <span class="text-danger">Squadra Scuri</span>
+        </h2>
+        <p class="text-muted small">
+            {{ partita[2] }} | {{ partita[1] }}
+        </p>
+    </div>
+
+    <!-- Liste giocatori -->
+    <div class="row mt-4">
+        <!-- Squadra Chiari -->
+        <div class="col-md-6">
+            <ul class="list-group shadow-sm rounded-3">
+                {% for giocatore in giocatori_chiari %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ giocatore[0] }}</span>
+                    <span>
+                        {% for i in range(giocatore[1]) %}
+                            ⚽
+                        {% endfor %}
+                        | Voto: {{ giocatore[2] }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Squadra Scuri -->
+        <div class="col-md-6">
+            <ul class="list-group shadow-sm rounded-3">
+                {% for giocatore in giocatori_scuri %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ giocatore[0] }}</span>
+                    <span>
+                        {% for i in range(giocatore[1]) %}
+                            ⚽
+                        {% endfor %}
+                        | Voto: {{ giocatore[2] }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Bottone ritorno -->
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('lista_partite') }}" class="btn btn-secondary">
+            ⬅ Torna alle partite
+        </a>
+    </div>
+</div>
+{% endblock %}
+

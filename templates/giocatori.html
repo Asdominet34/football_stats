@@ -1,16 +1,35 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="mb-4">Lista Giocatori</h1>
-    {% if giocatori %}
-        <ul class="list-group">
-            {% for g in giocatori %}
-                <li class="list-group-item">
-                    <a href="/giocatore?nome={{ g }}">{{ g }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-muted">Nessun giocatore registrato.</p>
-    {% endif %}
+<h1 class="mb-4">Statistiche Giocatori</h1>
+
+<!-- Barra di ricerca -->
+<div class="mb-3">
+    <input type="text" id="searchInput" class="form-control" placeholder="Cerca giocatore...">
+</div>
+
+{% if giocatori %}
+    <ul class="list-group" id="giocatoriList">
+        {% for g in giocatori %}
+            <li class="list-group-item">
+                <a href="/giocatore?nome={{ g }}">{{ g }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-muted">Nessun giocatore registrato.</p>
+{% endif %}
+
+<!-- Script per filtrare i giocatori -->
+<script>
+    document.getElementById("searchInput").addEventListener("input", function () {
+        const filter = this.value.toLowerCase();
+        const items = document.querySelectorAll("#giocatoriList li");
+
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(filter) ? "" : "none";
+        });
+    });
+</script>
 {% endblock %}
