@@ -7,23 +7,66 @@
         <div class="col-md-8">
             <h1 class="mb-4">Statistiche di {{ stats.nome }}</h1>
             <ul class="list-group">
+                <!-- Partite giocate + (V,P,S) -->
                 <li class="list-group-item">
                     Partite giocate: {{ stats.partite_giocate }}
                     <span class="text-muted">
                         ({{ stats.partite_vinte }}V, {{ stats.partite_pareggiate }}P, {{ stats.partite_perse }}S)
                     </span>
                 </li>
-                <li class="list-group-item">% Vittorie: {{ stats.percentuale_vittorie }}%</li>
-                <li class="list-group-item">Gol totali: {{ stats.gol_totali }}</li>
-                <li class="list-group-item">Media gol individuali: {{ stats.media_gol }}</li>
-                <li class="list-group-item">Media gol fatti squadra: {{ stats.media_gol_fatti_squadra }}</li>
-                <li class="list-group-item">Media gol subiti squadra: {{ stats.media_gol_subiti_squadra }}</li>
-                <li class="list-group-item">Media voto: {{ stats.media_voto }}</li>
+
+                <!-- Percentuale vittorie (ranking solo se >= 5 partite) -->
+                <li class="list-group-item">
+                    % Vittorie: {{ stats.percentuale_vittorie }}%
+                    {% if stats.ranking_percentuale_vittorie %}
+                        <span class="badge bg-info">#{{ stats.ranking_percentuale_vittorie }}</span>
+                    {% endif %}
+                </li>
+
+                <!-- Gol totali con ranking su tutti i giocatori -->
+                <li class="list-group-item">
+                    Gol totali: {{ stats.gol_totali }}
+                    {% if stats.ranking_gol %}
+                        <span class="badge bg-primary">#{{ stats.ranking_gol }}</span>
+                    {% endif %}
+                </li>
+
+                <!-- Media voto (ranking solo se >= 5 partite) -->
+                <li class="list-group-item">
+                    Media voto: {{ stats.media_voto }}
+                    {% if stats.ranking_media_voto %}
+                        <span class="badge bg-secondary">#{{ stats.ranking_media_voto }}</span>
+                    {% endif %}
+                </li>
+
+                <!-- Media gol individuali -->
+                <li class="list-group-item">
+                    Media gol: {{ stats.media_gol }}
+                    {% if stats.ranking_media_gol %}
+                        <span class="badge bg-secondary">#{{ stats.ranking_media_gol }}</span>
+                    {% endif %}
+                </li>
+
+                <!-- Media gol fatti squadra -->
+                <li class="list-group-item">
+                    Media gol fatti squadra: {{ stats.media_gol_fatti_squadra }}
+                    {% if stats.ranking_media_gol_fatti %}
+                        <span class="badge bg-secondary">#{{ stats.ranking_media_gol_fatti }}</span>
+                    {% endif %}
+                </li>
+
+                <!-- Media gol subiti squadra (ranking inverso: meno subiti = meglio) -->
+                <li class="list-group-item">
+                    Media gol subiti squadra: {{ stats.media_gol_subiti_squadra }}
+                    {% if stats.ranking_media_gol_subiti %}
+                        <span class="badge bg-secondary">#{{ stats.ranking_media_gol_subiti }}</span>
+                    {% endif %}
+                </li>
             </ul>
         </div>
 
         <!-- COLONNA DESTRA: FOTO GIOCATORE -->
-        <div class="col-md-4 d-flex align-items-center justify-content-center">
+        <div class="col-md-4 text-center">
             <img src="{{ url_for('static', filename=stats.foto) }}" 
                  alt="Foto di {{ stats.nome }}" 
                  class="img-fluid rounded-circle shadow-sm" 
@@ -34,5 +77,4 @@
         <p class="text-muted">Nessuna statistica trovata per il giocatore richiesto.</p>
     {% endif %}
 {% endblock %}
-
 

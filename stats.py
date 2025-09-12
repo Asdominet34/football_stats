@@ -19,14 +19,14 @@ def mostra_statistiche():
         if scelta == "1":
             nome_giocatore = input("Inserisci il nome del giocatore: ")
 
-            # Ottenere il numero totale di partite
+            # Numero totale di partite registrate
             c.execute('SELECT COUNT(*) FROM Partite')
             totale_partite = c.fetchone()[0]
 
             if totale_partite == 0:
                 print("Non ci sono partite registrate.")
             else:
-                # Recuperare le statistiche del giocatore selezionato
+                # --- Recupero statistiche del giocatore scelto ---
                 c.execute('''
                 SELECT nome, 
                        SUM(gol_individuali), 
@@ -46,48 +46,64 @@ def mostra_statistiche():
                 risultato = c.fetchone()
 
                 if risultato:
-                    # Filtrare i giocatori con almeno il 50% delle partite giocate
+                    # --- Recupero giocatori per ranking ---
+                    # Tutti i giocatori (per ranking "normali")
                     c.execute('''
                     SELECT nome, 
-                           SUM(gol_individuali) AS gol_individuali, 
-                           SUM(partite_giocate) AS partite_giocate, 
-                           SUM(partite_vinte) AS partite_vinte, 
-                           SUM(partite_pareggiate) AS partite_pareggiate, 
-                           SUM(partite_perse) AS partite_perse, 
-                           AVG(voto_pagella) AS voto_pagella, 
-                           AVG(gol_individuali) AS media_gol, 
-                           AVG(gol_fatti_squadra) AS media_gol_fatti_squadra,
-                           AVG(gol_subiti_squadra) AS media_gol_subiti_squadra,
+                           SUM(gol_individuali), 
+                           SUM(partite_giocate), 
+                           SUM(partite_vinte), 
+                           SUM(partite_pareggiate), 
+                           SUM(partite_perse), 
+                           AVG(voto_pagella), 
+                           AVG(gol_individuali), 
+                           AVG(gol_fatti_squadra),
+                           AVG(gol_subiti_squadra),
                            CAST(SUM(partite_vinte) AS REAL) / SUM(partite_giocate) * 100 AS percentuale_vittorie
                     FROM Giocatori
                     GROUP BY nome
-                    HAVING SUM(partite_giocate) >= ?
-                    ''', (totale_partite / 2,))
-                    giocatori_valide = c.fetchall()
-                    # Stampare solo i nomi dei giocatori
-                    nomi_giocatori = [giocatore[0] for giocatore in giocatori_valide]
-                    # Stampare la lunghezza della lista
-                    print("Numero totale di giocatori con almeno 50 percento delle partite giocate:", len(giocatori_valide))
-                    print("Nomi giocatori:", nomi_giocatori)
+                    ''')
+                    giocatori_tutti = c.fetchall()
 
-                    # Ordinare i giocatori per ciascuna statistica
-                    ranking_gol = sorted(giocatori_valide, key=lambda x: x[1], reverse=True)
-                    ranking_partite_giocate = sorted(giocatori_valide, key=lambda x: x[2], reverse=True)
-                    ranking_vinte = sorted(giocatori_valide, key=lambda x: x[3], reverse=True)
-                    ranking_voto = sorted(giocatori_valide, key=lambda x: x[6], reverse=True)
-                    ranking_media_gol = sorted(giocatori_valide, key=lambda x: x[7], reverse=True)
-                    ranking_percentuale = sorted(giocatori_valide, key=lambda x: x[10], reverse=True)
-                    ranking_media_gol_fatti_squadra = sorted(giocatori_valide, key=lambda x: x[8], reverse=True)
-                    ranking_media_gol_subiti_squadra = sorted(giocatori_valide, key=lambda x: x[9], reverse=True)
+                    # Solo giocatori con almeno 5 partite (per media voto e media gol)
+                    c.execute('''
+                    SELECT nome, 
+                           SUM(gol_individuali), 
+                           SUM(partite_giocate), 
+                           SUM(partite_vinte), 
+                           SUM(partite_pareggiate), 
+                           SUM(partite_perse), 
+                           AVG(voto_pagella), 
+                           AVG(gol_individuali), 
+                           AVG(gol_fatti_squadra),
+                           AVG(gol_subiti_squadra),
+                           CAST(SUM(partite_vinte) AS REAL) / SUM(partite_giocate) * 100 AS percentuale_vittorie
+                    FROM Giocatori
+                    GROUP BY nome
+                    HAVING SUM(partite_giocate) >= 5
+                    ''')
+                    giocatori_5 = c.fetchall()
 
-                    # Funzione per trovare la posizione di un giocatore
+                    # --- Calcolo ranking ---
+                    ranking_gol = sorted(giocatori_tutti, key=lambda x: x[1], reverse=True)
+                    ranking_partite_giocate = sorted(giocatori_tutti, key=lambda x: x[2], reverse=True)
+                    ranking_vinte = sorted(giocatori_tutti, key=lambda x: x[3], reverse=True)
+                    ranking_percentuale = sorted(giocatori_tutti, key=lambda x: x[10], reverse=True)
+                    ranking_media_gol_fatti_squadra = sorted(giocatori_tutti, key=lambda x: x[8], reverse=True)
+                    ranking_media_gol_subiti_squadra = sorted(giocatori_tutti, key=lambda x: x[9], reverse=True)
+
+                    # ✅ Ranking solo per chi ha almeno 5 partite
+                    ranking_voto = sorted(giocatori_5, key=lambda x: x[6], reverse=True)
+                    ranking_media_gol = sorted(giocatori_5, key=lambda x: x[7], reverse=True)
+
+                    # Funzione per trovare posizione in classifica
                     def trova_posizione(nome, ranking):
                         for posizione, giocatore in enumerate(ranking, start=1):
                             if giocatore[0] == nome:
                                 return posizione
                         return "-"
 
-                    # Calcolare le posizioni del giocatore selezionato
+                    # --- Calcolo posizioni ---
                     posizione_gol = trova_posizione(nome_giocatore, ranking_gol)
                     posizione_partite_giocate = trova_posizione(nome_giocatore, ranking_partite_giocate)
                     posizione_vinte = trova_posizione(nome_giocatore, ranking_vinte)
@@ -96,10 +112,9 @@ def mostra_statistiche():
                     posizione_percentuale = trova_posizione(nome_giocatore, ranking_percentuale)
                     posizione_media_gol_fatti_squadra = trova_posizione(nome_giocatore, ranking_media_gol_fatti_squadra)
                     posizione_media_gol_subiti_squadra = trova_posizione(nome_giocatore, ranking_media_gol_subiti_squadra)
-                    
 
-                    # Stampare le statistiche con il ranking
-                    print(f"\nStatistiche di {risultato[0]}, ranking tra i giocatori con almeno 50 percento delle partite giocate:")
+                    # --- Output su console ---
+                    print(f"\nStatistiche di {risultato[0]} (ranking calcolato su tutti i giocatori tranne media voto/gol -> min 5 partite):")
                     print(f"Gol individuali: {risultato[1]} ({posizione_gol}°)")
                     print(f"Partite giocate: {risultato[2]} ({posizione_partite_giocate}°)")
                     print(f"Partite vinte: {risultato[3]} ({posizione_vinte}°)")
@@ -110,7 +125,7 @@ def mostra_statistiche():
                     print(f"Percentuale partite vinte: {risultato[10]:.2f}% ({posizione_percentuale}°)")
                     print(f"Media gol segnati dalla sua squadra: {risultato[8]:.2f} ({posizione_media_gol_fatti_squadra}°)")
                     print(f"Media gol subiti dalla sua squadra: {risultato[9]:.2f} ({posizione_media_gol_subiti_squadra}°)")
-                    
+
                 else:
                     print("Giocatore non trovato.")
 
@@ -224,83 +239,92 @@ def mostra_statistiche():
                   f"({media_gol_senza2} senza {nome_giocatore1})")
 
         elif scelta == "4":
-            print("\nSeleziona la classifica che desideri visualizzare:")
-            print("1. Gol individuali")
-            print("2. Partite giocate")
-            print("3. Partite vinte")
-            print("4. Partite perse")
-            print("5. Media voto")
-            
-            scelta_classifica = input("Scegli un'opzione (1/2/3/4/5): ")
+                print("\nSeleziona la classifica che desideri visualizzare:")
+                print("1. Gol individuali")
+                print("2. Partite giocate")
+                print("3. Partite vinte")
+                print("4. Partite perse")
+                print("5. Media voto")
+                
+                scelta_classifica = input("Scegli un'opzione (1/2/3/4/5): ")
 
-            # Verifica il numero totale di partite per calcolare il 50%
-            c.execute('SELECT COUNT(*) FROM Partite')
-            totale_partite = c.fetchone()[0]
+                # Verifica il numero totale di partite (solo per messaggi informativi)
+                c.execute('SELECT COUNT(*) FROM Partite')
+                totale_partite = c.fetchone()[0]
 
-            if totale_partite == 0:
-                print("Non ci sono partite registrate.")
-            else:
-                # Query base per ottenere tutti i giocatori
-                query_tutti = '''
-                SELECT nome, 
-                       SUM(gol_individuali) AS gol_individuali, 
-                       SUM(partite_giocate) AS partite_giocate, 
-                       SUM(partite_vinte) AS partite_vinte, 
-                       SUM(partite_perse) AS partite_perse, 
-                       AVG(voto_pagella) AS media_voto
-                FROM Giocatori
-                GROUP BY nome
-                '''
-
-                c.execute(query_tutti)
-                tutti_giocatori = c.fetchall()
-
-                # Query per ottenere solo i giocatori con almeno il 50% delle partite giocate (per la media voto)
-                query_50_percento = '''
-                SELECT nome, 
-                       SUM(gol_individuali) AS gol_individuali, 
-                       SUM(partite_giocate) AS partite_giocate, 
-                       SUM(partite_vinte) AS partite_vinte, 
-                       SUM(partite_perse) AS partite_perse, 
-                       AVG(voto_pagella) AS media_voto
-                FROM Giocatori
-                GROUP BY nome
-                HAVING SUM(partite_giocate) >= ?
-                '''
-
-                c.execute(query_50_percento, (totale_partite / 2,))
-                giocatori_50_percento = c.fetchall()
-
-                # Dizionario per associare la scelta alla colonna corrispondente
-                opzioni_classifica = {
-                    "1": (1, "Gol individuali", tutti_giocatori),
-                    "2": (2, "Partite giocate", tutti_giocatori),
-                    "3": (3, "Partite vinte", tutti_giocatori),
-                    "4": (4, "Partite perse", tutti_giocatori),
-                    "5": (5, "Media voto", giocatori_50_percento)
-                }
-
-                if scelta_classifica in opzioni_classifica:
-                    colonna_index, nome_statistica, dataset = opzioni_classifica[scelta_classifica]
-
-                    # Se la classifica riguarda la media voto, mostra il messaggio di avviso
-                    if scelta_classifica == "5":
-                        print("\n Classifica basata solo sui giocatori con almeno il 50 percento delle partite giocate.")
-
-                    if not dataset:
-                        print(f"Nessun giocatore disponibile per la classifica {nome_statistica}.")
-                    else:
-                        classifica = sorted(dataset, key=lambda x: x[colonna_index], reverse=True)
-
-                        print(f"\nClassifica per {nome_statistica}:")
-                        for posizione, giocatore in enumerate(classifica, start=1):
-                            # Se è la classifica della media voto, mostra con 2 decimali, altrimenti senza decimali
-                            valore = f"{giocatore[colonna_index]:.2f}" if scelta_classifica == "5" else f"{str(int(giocatore[colonna_index]))}"
-                            print(f"{posizione}. {giocatore[0]} - {valore}")
-
+                if totale_partite == 0:
+                        print("Non ci sono partite registrate.")
                 else:
-                    print("Opzione non valida. Riprova.")
+                        # soglia minima per le classifiche basate su medie
+                        min_partite = 5
 
+                        # Query base per ottenere tutti i giocatori
+                        query_tutti = '''
+                        SELECT nome, 
+                               SUM(gol_individuali) AS gol_individuali, 
+                               SUM(partite_giocate) AS partite_giocate, 
+                               SUM(partite_vinte) AS partite_vinte, 
+                               SUM(partite_perse) AS partite_perse, 
+                               AVG(voto_pagella) AS media_voto
+                        FROM Giocatori
+                        GROUP BY nome
+                        '''
+
+                        c.execute(query_tutti)
+                        tutti_giocatori = c.fetchall()
+
+                        # Query per ottenere solo i giocatori con almeno min_partite (per la media voto)
+                        query_min_partite = '''
+                        SELECT nome, 
+                               SUM(gol_individuali) AS gol_individuali, 
+                               SUM(partite_giocate) AS partite_giocate, 
+                               SUM(partite_vinte) AS partite_vinte, 
+                               SUM(partite_perse) AS partite_perse, 
+                               AVG(voto_pagella) AS media_voto
+                        FROM Giocatori
+                        GROUP BY nome
+                        HAVING SUM(partite_giocate) >= ?
+                        '''
+
+                        c.execute(query_min_partite, (min_partite,))
+                        giocatori_min_partite = c.fetchall()
+
+                        # Dizionario per associare la scelta alla colonna corrispondente
+                        opzioni_classifica = {
+                                "1": (1, "Gol individuali", tutti_giocatori),
+                                "2": (2, "Partite giocate", tutti_giocatori),
+                                "3": (3, "Partite vinte", tutti_giocatori),
+                                "4": (4, "Partite perse", tutti_giocatori),
+                                "5": (5, f"Media voto (>= {min_partite} partite)", giocatori_min_partite)
+                        }
+
+                        if scelta_classifica in opzioni_classifica:
+                                colonna_index, nome_statistica, dataset = opzioni_classifica[scelta_classifica]
+
+                                # Se la classifica riguarda la media voto, mostra il messaggio di avviso
+                                if scelta_classifica == "5":
+                                        print(f"\nClassifica basata solo sui giocatori con almeno {min_partite} partite giocate.")
+
+                                if not dataset:
+                                        print(f"Nessun giocatore disponibile per la classifica {nome_statistica}.")
+                                else:
+                                        classifica = sorted(dataset, key=lambda x: x[colonna_index], reverse=True)
+
+                                        print(f"\nClassifica per {nome_statistica}:")
+                                        for posizione, giocatore in enumerate(classifica, start=1):
+                                                # Se è la classifica della media voto, mostra con 2 decimali, altrimenti senza decimali
+                                                if scelta_classifica == "5":
+                                                        valore = f"{giocatore[colonna_index]:.2f}"
+                                                else:
+                                                        # per sicurezza se il valore è None -> 0
+                                                        try:
+                                                                valore = f"{int(giocatore[colonna_index])}"
+                                                        except Exception:
+                                                                valore = str(giocatore[colonna_index])
+                                                print(f"{posizione}. {giocatore[0]} - {valore}")
+
+                        else:
+                                print("Opzione non valida. Riprova.")
 
         elif scelta == "5":
           print("Uscita dal menu delle statistiche.")
@@ -313,6 +337,7 @@ def get_statistiche_giocatore(nome_giocatore):
     conn = sqlite3.connect("calcetto_stats.db")
     c = conn.cursor()
 
+    # 🔎 Recupera le statistiche del giocatore
     c.execute('''
         SELECT nome, 
                SUM(gol_individuali), 
@@ -331,40 +356,97 @@ def get_statistiche_giocatore(nome_giocatore):
     ''', (nome_giocatore,))
     
     risultato = c.fetchone()
+
+    if not risultato:
+        conn.close()
+        return None
+
+    # Salva statistiche del giocatore in variabili
+    nome, gol_totali, partite_giocate, vinte, pareggiate, perse, media_voto, media_gol, media_gol_fatti, media_gol_subiti, perc_vittorie = risultato
+
+    # 1️⃣ Recupera tutti i giocatori per ranking
+    c.execute('''
+        SELECT nome, 
+               SUM(gol_individuali) AS gol_totali,
+               SUM(partite_giocate) AS partite_giocate,
+               SUM(partite_vinte) AS partite_vinte,
+               AVG(voto_pagella) AS media_voto,
+               AVG(gol_individuali) AS media_gol,
+               AVG(gol_fatti_squadra) AS media_gol_fatti_squadra,
+               AVG(gol_subiti_squadra) AS media_gol_subiti_squadra
+        FROM Giocatori
+        GROUP BY nome
+    ''')
+    tutti_giocatori = c.fetchall()
+
     conn.close()
 
-    if risultato:
-        # 🔎 Cerca la foto del giocatore
-        nome_file_base = risultato[0].lower().strip().replace(" ", "_")
-        cartella_foto = os.path.join("static", "img", "giocatori")
-
-        foto_trovata = None
-        for estensione in [".jpg", ".jpeg", ".png"]:
-            possibile_foto = os.path.join(cartella_foto, nome_file_base + estensione)
-            if os.path.exists(possibile_foto):
-                foto_trovata = f"img/giocatori/{nome_file_base}{estensione}"
-                break
-
-        if not foto_trovata:
-            foto_trovata = "img/placeholder.jpg"
-
-        # 📊 Restituisce tutte le statistiche
-        return {
-            "nome": risultato[0],
-            "gol_totali": risultato[1],
-            "partite_giocate": risultato[2],
-            "partite_vinte": risultato[3],
-            "partite_pareggiate": risultato[4],
-            "partite_perse": risultato[5],
-            "media_voto": round(risultato[6], 2) if risultato[6] else 0,
-            "media_gol": round(risultato[7], 2) if risultato[7] else 0,
-            "media_gol_fatti_squadra": round(risultato[8], 2) if risultato[8] else 0,
-            "media_gol_subiti_squadra": round(risultato[9], 2) if risultato[9] else 0,
-            "percentuale_vittorie": round(risultato[10], 2) if risultato[10] else 0,
-            "foto": foto_trovata
-        }
-    else:
+    # 📊 Calcola ranking
+    def trova_posizione(nome, ranking):
+        for pos, g in enumerate(ranking, start=1):
+            if g[0] == nome:
+                return pos
         return None
+
+    # 🔢 Classifica per gol totali (su tutti)
+    ranking_gol = sorted(tutti_giocatori, key=lambda x: x[1] or 0, reverse=True)
+    pos_gol = trova_posizione(nome, ranking_gol)
+
+    # 🎯 Filtra solo giocatori con almeno 5 partite
+    giocatori_min5 = [g for g in tutti_giocatori if g[2] and g[2] >= 5]
+
+    # Ranking per statistiche medie (solo >= 5 partite)
+    ranking_media_voto = sorted(giocatori_min5, key=lambda x: x[4] or 0, reverse=True)
+    ranking_media_gol = sorted(giocatori_min5, key=lambda x: x[5] or 0, reverse=True)
+    ranking_media_gol_fatti = sorted(giocatori_min5, key=lambda x: x[6] or 0, reverse=True)
+    ranking_media_gol_subiti = sorted(giocatori_min5, key=lambda x: x[7] or 0)  # crescente (meno subiti = meglio)
+
+    pos_media_voto = trova_posizione(nome, ranking_media_voto)
+    pos_media_gol = trova_posizione(nome, ranking_media_gol)
+    pos_media_gol_fatti = trova_posizione(nome, ranking_media_gol_fatti)
+    pos_media_gol_subiti = trova_posizione(nome, ranking_media_gol_subiti)
+
+    # 🏆 Classifica per percentuale vittorie (solo >= 5 partite)
+    ranking_vittorie = sorted(
+        [(g[0], (g[3] / g[2] * 100) if g[2] > 0 else 0) for g in giocatori_min5],
+        key=lambda x: x[1],
+        reverse=True
+    )
+    pos_percentuale_vittorie = trova_posizione(nome, ranking_vittorie)
+
+    # 🔎 Cerca la foto del giocatore
+    nome_file_base = nome.lower().strip().replace(" ", "_")
+    cartella_foto = os.path.join("static", "img", "giocatori")
+    foto_trovata = None
+    for estensione in [".jpg", ".jpeg", ".png"]:
+        possibile_foto = os.path.join(cartella_foto, nome_file_base + estensione)
+        if os.path.exists(possibile_foto):
+            foto_trovata = f"img/giocatori/{nome_file_base}{estensione}"
+            break
+    if not foto_trovata:
+        foto_trovata = "img/placeholder.jpg"
+
+    # 📊 Restituisce tutte le statistiche + ranking
+    return {
+        "nome": nome,
+        "gol_totali": gol_totali,
+        "ranking_gol": pos_gol,
+        "partite_giocate": partite_giocate,
+        "partite_vinte": vinte,
+        "partite_pareggiate": pareggiate,
+        "partite_perse": perse,
+        "media_voto": round(media_voto, 2) if media_voto else 0,
+        "ranking_media_voto": pos_media_voto,
+        "media_gol": round(media_gol, 2) if media_gol else 0,
+        "ranking_media_gol": pos_media_gol,
+        "media_gol_fatti_squadra": round(media_gol_fatti, 2) if media_gol_fatti else 0,
+        "ranking_media_gol_fatti": pos_media_gol_fatti,
+        "media_gol_subiti_squadra": round(media_gol_subiti, 2) if media_gol_subiti else 0,
+        "ranking_media_gol_subiti": pos_media_gol_subiti,
+        "percentuale_vittorie": round(perc_vittorie, 2) if perc_vittorie else 0,
+        "ranking_percentuale_vittorie": pos_percentuale_vittorie,
+        "foto": foto_trovata
+    }
 
 def get_statistiche_coppia(nome1, nome2):
     conn = sqlite3.connect("calcetto_stats.db")
@@ -528,10 +610,6 @@ def get_classifica(tipo):
     conn = sqlite3.connect("calcetto_stats.db")
     c = conn.cursor()
 
-    # Conta partite per regola del 50%
-    c.execute("SELECT COUNT(*) FROM Partite")
-    totale_partite = c.fetchone()[0]
-
     # Query base
     query_base = '''
         SELECT nome, 
@@ -544,38 +622,33 @@ def get_classifica(tipo):
         GROUP BY nome
     '''
 
-    # Query con filtro 50% partite (solo per media voto)
-    query_50 = query_base + " HAVING SUM(partite_giocate) >= ?"
+    # ✅ Filtro aggiornato: almeno 5 partite per media voto
+    query_5 = query_base + " HAVING SUM(partite_giocate) >= 5"
 
     if tipo == "gol":
         c.execute(query_base)
-        giocatori = c.fetchall()
-        classifica = sorted(giocatori, key=lambda x: x[1], reverse=True)
+        classifica = sorted(c.fetchall(), key=lambda x: x[1], reverse=True)
         titolo = "Classifica Gol"
 
     elif tipo == "giocate":
         c.execute(query_base)
-        giocatori = c.fetchall()
-        classifica = sorted(giocatori, key=lambda x: x[2], reverse=True)
+        classifica = sorted(c.fetchall(), key=lambda x: x[2], reverse=True)
         titolo = "Classifica Partite Giocate"
 
     elif tipo == "vinte":
         c.execute(query_base)
-        giocatori = c.fetchall()
-        classifica = sorted(giocatori, key=lambda x: x[3], reverse=True)
+        classifica = sorted(c.fetchall(), key=lambda x: x[3], reverse=True)
         titolo = "Classifica Partite Vinte"
 
     elif tipo == "perse":
         c.execute(query_base)
-        giocatori = c.fetchall()
-        classifica = sorted(giocatori, key=lambda x: x[4], reverse=True)
+        classifica = sorted(c.fetchall(), key=lambda x: x[4], reverse=True)
         titolo = "Classifica Partite Perse"
 
     elif tipo == "voto":
-        c.execute(query_50, (totale_partite / 2,))
-        giocatori = c.fetchall()
-        classifica = sorted(giocatori, key=lambda x: x[5], reverse=True)
-        titolo = "Classifica Media Voto (>=50% partite)"
+        c.execute(query_5)
+        classifica = sorted(c.fetchall(), key=lambda x: x[5], reverse=True)
+        titolo = "Classifica Media Voto (>=5 partite)"
 
     else:
         conn.close()
