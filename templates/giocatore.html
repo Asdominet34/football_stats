@@ -3,11 +3,41 @@
 {% block content %}
     {% if stats %}
     <div class="row">
-        <!-- COLONNA SINISTRA: STATISTICHE -->
         <div class="col-md-8">
             <h1 class="mb-4">Statistiche di {{ stats.nome }}</h1>
             <ul class="list-group">
-                <!-- Partite giocate + (V,P,S) -->
+
+                {# Macro per il badge di ranking con supporto a classifica invertita #}
+                {% macro ranking_badge(posizione, totale, invertito=False) %}
+                    {% if posizione %}
+                        {% if invertito %}
+                            {# Classifica inversa: posizione bassa = migliore #}
+                            {% if posizione == 1 %}
+                                <span class="badge bg-success me-2">#{{ posizione }}</span>
+                            {% elif posizione in [2,3] %}
+                                <span class="badge bg-success-subtle text-dark me-2">#{{ posizione }}</span>
+                            {% elif totale and posizione > (totale * 0.75) %}
+                                {# Peggior 25% per classifica invertita = posizioni più alte #}
+                                <span class="badge bg-danger me-2">#{{ posizione }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary me-2">#{{ posizione }}</span>
+                            {% endif %}
+                        {% else %}
+                            {# Classifica normale: posizione bassa = migliore #}
+                            {% if posizione == 1 %}
+                                <span class="badge bg-success me-2">#{{ posizione }}</span>
+                            {% elif posizione in [2,3] %}
+                                <span class="badge bg-success-subtle text-dark me-2">#{{ posizione }}</span>
+                            {% elif totale and posizione > (totale * 0.75) %}
+                                <span class="badge bg-danger me-2">#{{ posizione }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary me-2">#{{ posizione }}</span>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endmacro %}
+
+                <!-- Partite giocate -->
                 <li class="list-group-item">
                     Partite giocate: {{ stats.partite_giocate }}
                     <span class="text-muted">
@@ -15,57 +45,57 @@
                     </span>
                 </li>
 
-                <!-- Percentuale vittorie (ranking solo se >= 5 partite) -->
+                <!-- Percentuale vittorie -->
                 <li class="list-group-item">
-                    % Vittorie: {{ stats.percentuale_vittorie }}%
                     {% if stats.ranking_percentuale_vittorie %}
-                        <span class="badge bg-info">#{{ stats.ranking_percentuale_vittorie }}</span>
+                        {{ ranking_badge(stats.ranking_percentuale_vittorie, stats.totale_giocatori_percentuale_vittorie) }}
                     {% endif %}
+                    % Vittorie: {{ stats.percentuale_vittorie }}%
                 </li>
 
-                <!-- Gol totali con ranking su tutti i giocatori -->
+                <!-- Gol totali -->
                 <li class="list-group-item">
-                    Gol totali: {{ stats.gol_totali }}
                     {% if stats.ranking_gol %}
-                        <span class="badge bg-primary">#{{ stats.ranking_gol }}</span>
+                        {{ ranking_badge(stats.ranking_gol, stats.totale_giocatori_gol) }}
                     {% endif %}
+                    Gol totali: {{ stats.gol_totali }}
                 </li>
 
-                <!-- Media voto (ranking solo se >= 5 partite) -->
+                <!-- Media voto -->
                 <li class="list-group-item">
-                    Media voto: {{ stats.media_voto }}
                     {% if stats.ranking_media_voto %}
-                        <span class="badge bg-secondary">#{{ stats.ranking_media_voto }}</span>
+                        {{ ranking_badge(stats.ranking_media_voto, stats.totale_giocatori_media_voto) }}
                     {% endif %}
+                    Media voto: {{ stats.media_voto }}
                 </li>
 
-                <!-- Media gol individuali -->
+                <!-- Media gol -->
                 <li class="list-group-item">
-                    Media gol: {{ stats.media_gol }}
                     {% if stats.ranking_media_gol %}
-                        <span class="badge bg-secondary">#{{ stats.ranking_media_gol }}</span>
+                        {{ ranking_badge(stats.ranking_media_gol, stats.totale_giocatori_media_gol) }}
                     {% endif %}
+                    Media gol: {{ stats.media_gol }}
                 </li>
 
                 <!-- Media gol fatti squadra -->
                 <li class="list-group-item">
-                    Media gol fatti squadra: {{ stats.media_gol_fatti_squadra }}
                     {% if stats.ranking_media_gol_fatti %}
-                        <span class="badge bg-secondary">#{{ stats.ranking_media_gol_fatti }}</span>
+                        {{ ranking_badge(stats.ranking_media_gol_fatti, stats.totale_giocatori_media_gol_fatti) }}
                     {% endif %}
+                    Media gol fatti squadra: {{ stats.media_gol_fatti_squadra }}
                 </li>
 
-                <!-- Media gol subiti squadra (ranking inverso: meno subiti = meglio) -->
+                <!-- Media gol subiti squadra (classifica invertita) -->
                 <li class="list-group-item">
-                    Media gol subiti squadra: {{ stats.media_gol_subiti_squadra }}
                     {% if stats.ranking_media_gol_subiti %}
-                        <span class="badge bg-secondary">#{{ stats.ranking_media_gol_subiti }}</span>
+                        {{ ranking_badge(stats.ranking_media_gol_subiti, stats.totale_giocatori_media_gol_subiti, True) }}
                     {% endif %}
+                    Media gol subiti squadra: {{ stats.media_gol_subiti_squadra }}
                 </li>
             </ul>
         </div>
 
-        <!-- COLONNA DESTRA: FOTO GIOCATORE -->
+        <!-- COLONNA DESTRA: FOTO -->
         <div class="col-md-4 text-center">
             <img src="{{ url_for('static', filename=stats.foto) }}" 
                  alt="Foto di {{ stats.nome }}" 

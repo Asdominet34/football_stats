@@ -1,25 +1,77 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>{{ titolo }}</h2>
+<h2 class="text-2xl font-bold mb-6">{{ titolo }}</h2>
 
 {% if classifica %}
-    <ol>
-    {% for g in classifica %}
-        {% if tipo == "voto" %}
-            <li>{{ g[0] }} - {{ "%.2f"|format(g[5]) }}</li>
-        {% elif tipo == "gol" %}
-            <li>{{ g[0] }} - {{ g[1] }} gol</li>
-        {% elif tipo == "giocate" %}
-            <li>{{ g[0] }} - {{ g[2] }} partite</li>
-        {% elif tipo == "vinte" %}
-            <li>{{ g[0] }} - {{ g[3] }} vinte</li>
-        {% elif tipo == "perse" %}
-            <li>{{ g[0] }} - {{ g[4] }} perse</li>
-        {% endif %}
+<!-- Container con scorrimento orizzontale -->
+<div class="flex flex-row overflow-x-auto space-x-6 pb-4 no-scrollbar">
+    {% for g, foto in classifica %}
+        <div class="flex-none bg-white shadow-xl rounded-2xl p-4 w-52 relative transform transition-transform hover:scale-105">
+            
+            <!-- Posizione classifica -->
+            <div class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">
+                {{ loop.index }}
+            </div>
+
+            <!-- Nome -->
+            <h3 class="text-lg font-bold text-center mb-2">{{ g[0] }}</h3>
+
+            <!-- Foto/placeholder centrata e più piccola -->
+            <img src="{{ url_for('static', filename=foto) }}"
+                 alt="Foto di {{ g[0] }}"
+                 class="mx-auto mb-3 w-24 h-24 object-cover rounded-xl shadow">
+
+            <!-- Numero e etichetta grandi come nome -->
+            <p class="text-lg font-bold text-center mb-0">
+                {% if tipo == "voto" %}
+                    {{ "%.2f"|format(g[5]) }}
+                {% elif tipo == "gol" %}
+                    {{ g[1] }}
+                {% elif tipo == "giocate" %}
+                    {{ g[2] }}
+                {% elif tipo == "vinte" %}
+                    {{ g[3] }}
+                {% elif tipo == "perse" %}
+                    {{ g[4] }}
+                {% elif tipo == "mediagol" %}
+                    {{ "%.2f"|format(g[6]) }}
+                {% elif tipo == "mediagolfatti" %}
+                    {{ "%.2f"|format(g[7]) }}
+                {% elif tipo == "mediagolsubiti" %}
+                    {{ "%.2f"|format(g[8]) }}
+                {% elif tipo == "percentuale_vittorie" %}
+                    {{ "%.2f"|format(g[1]) }}%
+                {% endif %}
+            </p>
+            <p class="text-lg font-bold text-center uppercase">
+                {% if tipo == "gol" %}GOL{% endif %}
+                {% if tipo == "giocate" %}PARTITE{% endif %}
+                {% if tipo == "vinte" %}VINTE{% endif %}
+                {% if tipo == "perse" %}PERSE{% endif %}
+                {% if tipo == "voto" %}VOTO{% endif %}
+                {% if tipo == "mediagol" %}GOL/PARTITA{% endif %}
+                {% if tipo == "mediagolfatti" %}GOL SQUADRA/PARTITA{% endif %}
+                {% if tipo == "mediagolsubiti" %}GOL SUBITI/PARTITA{% endif %}
+                {% if tipo == "percentuale_vittorie" %}% VITTORIE{% endif %}
+            </p>
+        </div>
     {% endfor %}
-    </ol>
+</div>
+
+<!-- Rimuove scrollbar brutta -->
+<style>
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
+
 {% else %}
-    <p>Nessun dato disponibile per questa classifica.</p>
+<p>Nessun dato disponibile per questa classifica.</p>
 {% endif %}
 {% endblock %}
+

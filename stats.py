@@ -396,10 +396,10 @@ def get_statistiche_giocatore(nome_giocatore):
     giocatori_min5 = [g for g in tutti_giocatori if g[2] and g[2] >= 5]
 
     # Ranking per statistiche medie (solo >= 5 partite)
-    ranking_media_voto = sorted(giocatori_min5, key=lambda x: x[4] or 0, reverse=True)
-    ranking_media_gol = sorted(giocatori_min5, key=lambda x: x[5] or 0, reverse=True)
-    ranking_media_gol_fatti = sorted(giocatori_min5, key=lambda x: x[6] or 0, reverse=True)
-    ranking_media_gol_subiti = sorted(giocatori_min5, key=lambda x: x[7] or 0)  # crescente (meno subiti = meglio)
+    ranking_media_voto = sorted(giocatori_min5, key=lambda x: x[3] or 0, reverse=True)
+    ranking_media_gol = sorted(giocatori_min5, key=lambda x: x[4] or 0, reverse=True)
+    ranking_media_gol_fatti = sorted(giocatori_min5, key=lambda x: x[5] or 0, reverse=True)
+    ranking_media_gol_subiti = sorted(giocatori_min5, key=lambda x: x[6] or 0)  # crescente (meno subiti = meglio)
 
     pos_media_voto = trova_posizione(nome, ranking_media_voto)
     pos_media_gol = trova_posizione(nome, ranking_media_gol)
@@ -408,11 +408,19 @@ def get_statistiche_giocatore(nome_giocatore):
 
     # 🏆 Classifica per percentuale vittorie (solo >= 5 partite)
     ranking_vittorie = sorted(
-        [(g[0], (g[3] / g[2] * 100) if g[2] > 0 else 0) for g in giocatori_min5],
+        [(g[0], (g[2] and g[2] > 0 and (g[3] / g[2] * 100)) or 0) for g in giocatori_min5],
         key=lambda x: x[1],
         reverse=True
     )
     pos_percentuale_vittorie = trova_posizione(nome, ranking_vittorie)
+
+    # 📐 Totali per calcolare l’ultimo 25%
+    totale_giocatori_gol = len(ranking_gol)
+    totale_giocatori_media_voto = len(ranking_media_voto)
+    totale_giocatori_media_gol = len(ranking_media_gol)
+    totale_giocatori_media_gol_fatti = len(ranking_media_gol_fatti)
+    totale_giocatori_media_gol_subiti = len(ranking_media_gol_subiti)
+    totale_giocatori_percentuale_vittorie = len(ranking_vittorie)
 
     # 🔎 Cerca la foto del giocatore
     nome_file_base = nome.lower().strip().replace(" ", "_")
@@ -426,25 +434,38 @@ def get_statistiche_giocatore(nome_giocatore):
     if not foto_trovata:
         foto_trovata = "img/placeholder.jpg"
 
-    # 📊 Restituisce tutte le statistiche + ranking
+    # 📊 Restituisce tutte le statistiche + ranking + totali
     return {
         "nome": nome,
         "gol_totali": gol_totali,
         "ranking_gol": pos_gol,
+        "totale_giocatori_gol": totale_giocatori_gol,
+
         "partite_giocate": partite_giocate,
         "partite_vinte": vinte,
         "partite_pareggiate": pareggiate,
         "partite_perse": perse,
+
         "media_voto": round(media_voto, 2) if media_voto else 0,
         "ranking_media_voto": pos_media_voto,
+        "totale_giocatori_media_voto": totale_giocatori_media_voto,
+
         "media_gol": round(media_gol, 2) if media_gol else 0,
         "ranking_media_gol": pos_media_gol,
+        "totale_giocatori_media_gol": totale_giocatori_media_gol,
+
         "media_gol_fatti_squadra": round(media_gol_fatti, 2) if media_gol_fatti else 0,
         "ranking_media_gol_fatti": pos_media_gol_fatti,
+        "totale_giocatori_media_gol_fatti": totale_giocatori_media_gol_fatti,
+
         "media_gol_subiti_squadra": round(media_gol_subiti, 2) if media_gol_subiti else 0,
         "ranking_media_gol_subiti": pos_media_gol_subiti,
+        "totale_giocatori_media_gol_subiti": totale_giocatori_media_gol_subiti,
+
         "percentuale_vittorie": round(perc_vittorie, 2) if perc_vittorie else 0,
         "ranking_percentuale_vittorie": pos_percentuale_vittorie,
+        "totale_giocatori_percentuale_vittorie": totale_giocatori_percentuale_vittorie,
+
         "foto": foto_trovata
     }
 
@@ -617,42 +638,101 @@ def get_classifica(tipo):
                SUM(partite_giocate) AS partite_giocate, 
                SUM(partite_vinte) AS partite_vinte, 
                SUM(partite_perse) AS partite_perse, 
-               AVG(voto_pagella) AS media_voto
+               AVG(voto_pagella) AS media_voto,
+               AVG(gol_individuali) AS media_gol,
+               AVG(gol_fatti_squadra) AS media_gol_fatti,
+               AVG(gol_subiti_squadra) AS media_gol_subiti
         FROM Giocatori
         GROUP BY nome
     '''
 
-    # ✅ Filtro aggiornato: almeno 5 partite per media voto
+    # Filtro: almeno 5 partite
     query_5 = query_base + " HAVING SUM(partite_giocate) >= 5"
+
+    classifica = []
+    titolo = ""
 
     if tipo == "gol":
         c.execute(query_base)
-        classifica = sorted(c.fetchall(), key=lambda x: x[1], reverse=True)
+        rows = sorted(c.fetchall(), key=lambda x: x[1] or 0, reverse=True)
         titolo = "Classifica Gol"
 
     elif tipo == "giocate":
         c.execute(query_base)
-        classifica = sorted(c.fetchall(), key=lambda x: x[2], reverse=True)
+        rows = sorted(c.fetchall(), key=lambda x: x[2] or 0, reverse=True)
         titolo = "Classifica Partite Giocate"
 
     elif tipo == "vinte":
         c.execute(query_base)
-        classifica = sorted(c.fetchall(), key=lambda x: x[3], reverse=True)
+        rows = sorted(c.fetchall(), key=lambda x: x[3] or 0, reverse=True)
         titolo = "Classifica Partite Vinte"
 
     elif tipo == "perse":
         c.execute(query_base)
-        classifica = sorted(c.fetchall(), key=lambda x: x[4], reverse=True)
+        rows = sorted(c.fetchall(), key=lambda x: x[4] or 0, reverse=True)
         titolo = "Classifica Partite Perse"
 
     elif tipo == "voto":
         c.execute(query_5)
-        classifica = sorted(c.fetchall(), key=lambda x: x[5], reverse=True)
-        titolo = "Classifica Media Voto (>=5 partite)"
+        rows = sorted(c.fetchall(), key=lambda x: x[5] or 0, reverse=True)
+        titolo = "Classifica Media Voto (≥ 5 partite)"
+
+    elif tipo == "mediagol":
+        c.execute(query_5)
+        rows = sorted(c.fetchall(), key=lambda x: x[6] or 0, reverse=True)
+        titolo = "Classifica Media Gol Individuali (≥ 5 partite)"
+
+    elif tipo == "mediagolfatti":
+        c.execute(query_5)
+        rows = sorted(c.fetchall(), key=lambda x: x[7] or 0, reverse=True)
+        titolo = "Classifica Media Gol Fatti Squadra (≥ 5 partite)"
+
+    elif tipo == "mediagolsubiti":
+        c.execute(query_5)
+        # Ordinamento crescente (meno subiti = migliore)
+        rows = sorted(c.fetchall(), key=lambda x: x[8] or 0)
+        titolo = "Classifica Media Gol Subiti Squadra (≥ 5 partite)"
+
+    elif tipo == "percentuale_vittorie":
+        c.execute('''
+            SELECT nome,
+                   SUM(partite_giocate) AS partite_giocate,
+                   SUM(partite_vinte) AS partite_vinte
+            FROM Giocatori
+            GROUP BY nome
+            HAVING SUM(partite_giocate) >= 5
+        ''')
+        rows_raw = c.fetchall()
+        rows = []
+        for g in rows_raw:
+            nome, partite_giocate, vinte = g
+            perc = (vinte / partite_giocate * 100) if partite_giocate > 0 else 0
+            rows.append((nome, perc))
+        rows.sort(key=lambda x: x[1], reverse=True)
+        titolo = "Classifica Percentuale Vittorie (≥ 5 partite)"
 
     else:
         conn.close()
         return None, []
+
+    # 🔎 Gestione foto (anche per percentuale vittorie)
+    classifica = []
+    cartella_foto = os.path.join("static", "img", "giocatori")
+
+    for r in rows:
+        nome = r[0]
+        # Costruisco path foto
+        nome_file_base = nome.lower().strip().replace(" ", "_")
+        foto_relativa = None
+        for est in [".jpg", ".jpeg", ".png"]:
+            possibile_foto = os.path.join(cartella_foto, nome_file_base + est)
+            if os.path.exists(possibile_foto):
+                foto_relativa = f"img/giocatori/{nome_file_base}{est}"
+                break
+        if not foto_relativa:
+            foto_relativa = "img/placeholder.jpg"
+
+        classifica.append((r, foto_relativa))
 
     conn.close()
     return titolo, classifica

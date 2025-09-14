@@ -1,0 +1,5 @@
+Sezione giocatori: Aggiungere andamento temporaneo e o ultime partite, ancora errore classifica gol subiti ranking
+
+Sezione classifiche: controllare che modifiche siano agg anche per versione terminale. figurine che vanno da sx a dx si ingrandiscono quando ci passi sopra con mouse, massimo 4 5 figurine in visualizzazione pagina poi scorre, esempio Nome grande, sotto foto, sotto numero, sotto gol, in alto sx posizione.
+
+Sezione stats coppia: abbellire
