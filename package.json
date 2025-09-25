@@ -1,0 +1,23 @@
+{
+  "name": "football_stats",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Asdominet34/football_stats.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Asdominet34/football_stats/issues"
+  },
+  "homepage": "https://github.com/Asdominet34/football_stats#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.10"
+  }
+}

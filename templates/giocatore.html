@@ -1,110 +1,99 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% if stats %}
-    <div class="row">
-        <div class="col-md-8">
-            <h1 class="mb-4">Statistiche di {{ stats.nome }}</h1>
-            <ul class="list-group">
+{% if stats %}
+<div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
 
-                {# Macro per il badge di ranking con supporto a classifica invertita #}
-                {% macro ranking_badge(posizione, totale, invertito=False) %}
-                    {% if posizione %}
-                        {% if invertito %}
-                            {# Classifica inversa: posizione bassa = migliore #}
-                            {% if posizione == 1 %}
-                                <span class="badge bg-success me-2">#{{ posizione }}</span>
-                            {% elif posizione in [2,3] %}
-                                <span class="badge bg-success-subtle text-dark me-2">#{{ posizione }}</span>
-                            {% elif totale and posizione > (totale * 0.75) %}
-                                {# Peggior 25% per classifica invertita = posizioni più alte #}
-                                <span class="badge bg-danger me-2">#{{ posizione }}</span>
-                            {% else %}
-                                <span class="badge bg-secondary me-2">#{{ posizione }}</span>
-                            {% endif %}
+    <!-- STATISTICHE -->
+    <div class="md:col-span-2">
+        <h1 class="text-2xl font-bold mb-6">Statistiche di {{ stats.nome }}</h1>
+
+        <ul class="space-y-3">
+            {% macro ranking_badge(posizione, totale, invertito=False) %}
+                {% if posizione %}
+                    {% if invertito %}
+                        {% if posizione == 1 %}
+                            <span class="bg-green-600 text-white text-xs px-2 py-1 rounded-md font-semibold">#{{ posizione }}</span>
+                        {% elif posizione in [2,3] %}
+                            <span class="bg-green-200 text-green-900 text-xs px-2 py-1 rounded-md font-semibold">#{{ posizione }}</span>
+                        {% elif totale and posizione > (totale * 0.75) %}
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-md font-semibold">#{{ posizione }}</span>
                         {% else %}
-                            {# Classifica normale: posizione bassa = migliore #}
-                            {% if posizione == 1 %}
-                                <span class="badge bg-success me-2">#{{ posizione }}</span>
-                            {% elif posizione in [2,3] %}
-                                <span class="badge bg-success-subtle text-dark me-2">#{{ posizione }}</span>
-                            {% elif totale and posizione > (totale * 0.75) %}
-                                <span class="badge bg-danger me-2">#{{ posizione }}</span>
-                            {% else %}
-                                <span class="badge bg-secondary me-2">#{{ posizione }}</span>
-                            {% endif %}
+                            <span class="bg-gray-300 text-gray-900 text-xs px-2 py-1 rounded-md font-semibold">#{{ posizione }}</span>
+                        {% endif %}
+                    {% else %}
+                        {% if posizione == 1 %}
+                            <span class="bg-green-600 text-white text-xs px-2 py-1 rounded-md font-semibold">#{{ posizione }}</span>
+                        {% elif posizione in [2,3] %}
+                            <span class="bg-green-200 text-green-900 text-xs px-2 py-1 rounded-md font-semibold">#{{ posizione }}</span>
+                        {% elif totale and posizione > (totale * 0.75) %}
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-md font-semibold">#{{ posizione }}</span>
+                        {% else %}
+                            <span class="bg-gray-300 text-gray-900 text-xs px-2 py-1 rounded-md font-semibold">#{{ posizione }}</span>
                         {% endif %}
                     {% endif %}
-                {% endmacro %}
+                {% endif %}
+            {% endmacro %}
 
-                <!-- Partite giocate -->
-                <li class="list-group-item">
-                    Partite giocate: {{ stats.partite_giocate }}
-                    <span class="text-muted">
-                        ({{ stats.partite_vinte }}V, {{ stats.partite_pareggiate }}P, {{ stats.partite_perse }}S)
-                    </span>
-                </li>
+            <li class="bg-white shadow rounded-lg px-4 py-3">
+                <span class="font-semibold">Partite giocate:</span> {{ stats.partite_giocate }}
+                <span class="text-gray-500 text-sm">
+                    ({{ stats.partite_vinte }}V, {{ stats.partite_pareggiate }}P, {{ stats.partite_perse }}S)
+                </span>
+            </li>
 
-                <!-- Percentuale vittorie -->
-                <li class="list-group-item">
-                    {% if stats.ranking_percentuale_vittorie %}
-                        {{ ranking_badge(stats.ranking_percentuale_vittorie, stats.totale_giocatori_percentuale_vittorie) }}
-                    {% endif %}
-                    % Vittorie: {{ stats.percentuale_vittorie }}%
-                </li>
+            <li class="bg-white shadow rounded-lg px-4 py-3">
+                {% if stats.ranking_percentuale_vittorie %}
+                    {{ ranking_badge(stats.ranking_percentuale_vittorie, stats.totale_giocatori_percentuale_vittorie) }}
+                {% endif %}
+                <span class="font-semibold">% Vittorie:</span> {{ stats.percentuale_vittorie }}%
+            </li>
 
-                <!-- Gol totali -->
-                <li class="list-group-item">
-                    {% if stats.ranking_gol %}
-                        {{ ranking_badge(stats.ranking_gol, stats.totale_giocatori_gol) }}
-                    {% endif %}
-                    Gol totali: {{ stats.gol_totali }}
-                </li>
+            <li class="bg-white shadow rounded-lg px-4 py-3">
+                {% if stats.ranking_gol %}
+                    {{ ranking_badge(stats.ranking_gol, stats.totale_giocatori_gol) }}
+                {% endif %}
+                <span class="font-semibold">Gol totali:</span> {{ stats.gol_totali }}
+            </li>
 
-                <!-- Media voto -->
-                <li class="list-group-item">
-                    {% if stats.ranking_media_voto %}
-                        {{ ranking_badge(stats.ranking_media_voto, stats.totale_giocatori_media_voto) }}
-                    {% endif %}
-                    Media voto: {{ stats.media_voto }}
-                </li>
+            <li class="bg-white shadow rounded-lg px-4 py-3">
+                {% if stats.ranking_media_voto %}
+                    {{ ranking_badge(stats.ranking_media_voto, stats.totale_giocatori_media_voto) }}
+                {% endif %}
+                <span class="font-semibold">Media voto:</span> {{ stats.media_voto }}
+            </li>
 
-                <!-- Media gol -->
-                <li class="list-group-item">
-                    {% if stats.ranking_media_gol %}
-                        {{ ranking_badge(stats.ranking_media_gol, stats.totale_giocatori_media_gol) }}
-                    {% endif %}
-                    Media gol: {{ stats.media_gol }}
-                </li>
+            <li class="bg-white shadow rounded-lg px-4 py-3">
+                {% if stats.ranking_media_gol %}
+                    {{ ranking_badge(stats.ranking_media_gol, stats.totale_giocatori_media_gol) }}
+                {% endif %}
+                <span class="font-semibold">Media gol:</span> {{ stats.media_gol }}
+            </li>
 
-                <!-- Media gol fatti squadra -->
-                <li class="list-group-item">
-                    {% if stats.ranking_media_gol_fatti %}
-                        {{ ranking_badge(stats.ranking_media_gol_fatti, stats.totale_giocatori_media_gol_fatti) }}
-                    {% endif %}
-                    Media gol fatti squadra: {{ stats.media_gol_fatti_squadra }}
-                </li>
+            <li class="bg-white shadow rounded-lg px-4 py-3">
+                {% if stats.ranking_media_gol_fatti %}
+                    {{ ranking_badge(stats.ranking_media_gol_fatti, stats.totale_giocatori_media_gol_fatti) }}
+                {% endif %}
+                <span class="font-semibold">Media gol fatti squadra:</span> {{ stats.media_gol_fatti_squadra }}
+            </li>
 
-                <!-- Media gol subiti squadra (classifica invertita) -->
-                <li class="list-group-item">
-                    {% if stats.ranking_media_gol_subiti %}
-                        {{ ranking_badge(stats.ranking_media_gol_subiti, stats.totale_giocatori_media_gol_subiti, True) }}
-                    {% endif %}
-                    Media gol subiti squadra: {{ stats.media_gol_subiti_squadra }}
-                </li>
-            </ul>
-        </div>
-
-        <!-- COLONNA DESTRA: FOTO -->
-        <div class="col-md-4 text-center">
-            <img src="{{ url_for('static', filename=stats.foto) }}" 
-                 alt="Foto di {{ stats.nome }}" 
-                 class="img-fluid rounded-circle shadow-sm" 
-                 style="max-width: 250px;">
-        </div>
+            <li class="bg-white shadow rounded-lg px-4 py-3">
+                {% if stats.ranking_media_gol_subiti %}
+                    {{ ranking_badge(stats.ranking_media_gol_subiti, stats.totale_giocatori_media_gol_subiti, True) }}
+                {% endif %}
+                <span class="font-semibold">Media gol subiti squadra:</span> {{ stats.media_gol_subiti_squadra }}
+            </li>
+        </ul>
     </div>
-    {% else %}
-        <p class="text-muted">Nessuna statistica trovata per il giocatore richiesto.</p>
-    {% endif %}
-{% endblock %}
 
+    <!-- FOTO -->
+    <div class="flex items-start justify-center">
+        <img src="{{ url_for('static', filename=stats.foto) }}"
+             alt="Foto di {{ stats.nome }}"
+             class="rounded-full shadow-lg w-56 h-56 object-cover border-4 border-gray-200">
+    </div>
+</div>
+{% else %}
+<p class="text-center text-gray-500 mt-8">Nessuna statistica trovata per il giocatore richiesto.</p>
+{% endif %}
+{% endblock %}

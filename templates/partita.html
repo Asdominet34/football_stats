@@ -3,63 +3,65 @@
 {% block title %}Dettaglio Partita{% endblock %}
 
 {% block content %}
-<div class="partita-dettaglio container">
+<div class="max-w-5xl mx-auto">
 
-    <!-- Titolo, punteggio e squadre -->
-    <div class="text-center my-4">
-        <h2 class="fw-bold display-5">
-            <span class="text-primary">Squadra Chiari</span>
+    <!-- Titolo e dettagli -->
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold mb-2">
+            <span class="text-blue-600">Squadra Chiari</span>
             {{ partita[3] }} - {{ partita[4] }}
-            <span class="text-danger">Squadra Scuri</span>
+            <span class="text-red-600">Squadra Scuri</span>
         </h2>
-        <p class="text-muted small">
+        <p class="text-gray-500 text-base">
             {{ partita[2] }} | {{ partita[1] }}
         </p>
     </div>
 
-    <!-- Liste giocatori -->
-    <div class="row mt-4">
-        <!-- Squadra Chiari -->
-        <div class="col-md-6">
-            <ul class="list-group shadow-sm rounded-3">
+    <!-- Due colonne affiancate -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- Colonna Chiari -->
+        <div class="bg-white p-5 rounded-2xl shadow">
+            <h3 class="text-xl font-semibold text-blue-600 mb-4 text-center">Chiari</h3>
+            <ul class="space-y-3">
                 {% for giocatore in giocatori_chiari %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{{ giocatore[0] }}</span>
-                    <span>
-                        {% for i in range(giocatore[1]) %}
-                            ⚽
-                        {% endfor %}
-                        | Voto: {{ giocatore[2] }}
+                <li class="flex justify-between items-center border-b last:border-none pb-2">
+                    <span class="text-gray-800">{{ giocatore[0] }}</span>
+                    <span class="flex items-center gap-1 text-sm">
+                        {% for i in range(giocatore[1]) %}⚽{% endfor %}
+                        <span class="ml-2 text-gray-600">| Voto: {{ giocatore[2] }}</span>
                     </span>
                 </li>
                 {% endfor %}
             </ul>
         </div>
 
-        <!-- Squadra Scuri -->
-        <div class="col-md-6">
-            <ul class="list-group shadow-sm rounded-3">
+        <!-- Colonna Scuri -->
+        <div class="bg-white p-5 rounded-2xl shadow">
+            <h3 class="text-xl font-semibold text-red-600 mb-4 text-center">Scuri</h3>
+            <ul class="space-y-3">
                 {% for giocatore in giocatori_scuri %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{{ giocatore[0] }}</span>
-                    <span>
-                        {% for i in range(giocatore[1]) %}
-                            ⚽
-                        {% endfor %}
-                        | Voto: {{ giocatore[2] }}
+                <li class="flex justify-between items-center border-b last:border-none pb-2">
+                    <span class="text-gray-800">{{ giocatore[0] }}</span>
+                    <span class="flex items-center gap-1 text-sm">
+                        {% for i in range(giocatore[1]) %}⚽{% endfor %}
+                        <span class="ml-2 text-gray-600">| Voto: {{ giocatore[2] }}</span>
                     </span>
                 </li>
                 {% endfor %}
             </ul>
         </div>
+
     </div>
 
     <!-- Bottone ritorno -->
-    <div class="mt-4 text-center">
-        <a href="{{ url_for('lista_partite') }}" class="btn btn-secondary">
+    <div class="mt-8 text-center">
+        <a href="{{ url_for('lista_partite') }}" 
+           class="inline-block bg-gray-800 text-white px-6 py-3 rounded-xl shadow hover:bg-gray-700 transition">
             ⬅ Torna alle partite
         </a>
     </div>
 </div>
 {% endblock %}
+
 

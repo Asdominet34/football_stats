@@ -1,29 +1,36 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="text-2xl font-bold mb-6">{{ titolo }}</h2>
+<h2 class="text-xl font-bold mb-4 text-center">{{ titolo }}</h2>
 
 {% if classifica %}
-<!-- Container con scorrimento orizzontale -->
-<div class="flex flex-row overflow-x-auto space-x-6 pb-4 no-scrollbar">
-    {% for g, foto in classifica %}
-        <div class="flex-none bg-white shadow-xl rounded-2xl p-4 w-52 relative transform transition-transform hover:scale-105">
-            
-            <!-- Posizione classifica -->
-            <div class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center">
+<div class="relative w-full">
+    <!-- Freccia sinistra -->
+    <button onclick="scrollLeft()" 
+            class="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow z-10">
+        &#10094;
+    </button>
+
+    <!-- Contenitore orizzontale compatto -->
+    <div id="scroll-container" class="flex flex-row flex-nowrap overflow-x-scroll space-x-4 px-10 no-scrollbar">
+        {% for g, foto in classifica %}
+        <div class="flex-none bg-white shadow-md rounded-xl p-2 w-32 h-56 relative transform transition-transform hover:scale-105">
+
+            <!-- Posizione -->
+            <div class="absolute top-1 left-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                 {{ loop.index }}
             </div>
 
             <!-- Nome -->
-            <h3 class="text-lg font-bold text-center mb-2">{{ g[0] }}</h3>
+            <h3 class="text-sm font-bold text-center mb-1 truncate">{{ g[0] }}</h3>
 
-            <!-- Foto/placeholder centrata e più piccola -->
+            <!-- Foto più piccola -->
             <img src="{{ url_for('static', filename=foto) }}"
                  alt="Foto di {{ g[0] }}"
-                 class="mx-auto mb-3 w-24 h-24 object-cover rounded-xl shadow">
+                 class="mx-auto mb-1 w-12 h-12 object-cover rounded-lg">
 
-            <!-- Numero e etichetta grandi come nome -->
-            <p class="text-lg font-bold text-center mb-0">
+            <!-- Numero grande e label -->
+            <p class="text-base font-bold text-center leading-none">
                 {% if tipo == "voto" %}
                     {{ "%.2f"|format(g[5]) }}
                 {% elif tipo == "gol" %}
@@ -44,34 +51,44 @@
                     {{ "%.2f"|format(g[1]) }}%
                 {% endif %}
             </p>
-            <p class="text-lg font-bold text-center uppercase">
+            <p class="text-sm font-bold text-center uppercase leading-none">
                 {% if tipo == "gol" %}GOL{% endif %}
                 {% if tipo == "giocate" %}PARTITE{% endif %}
                 {% if tipo == "vinte" %}VINTE{% endif %}
                 {% if tipo == "perse" %}PERSE{% endif %}
                 {% if tipo == "voto" %}VOTO{% endif %}
                 {% if tipo == "mediagol" %}GOL/PARTITA{% endif %}
-                {% if tipo == "mediagolfatti" %}GOL SQUADRA/PARTITA{% endif %}
-                {% if tipo == "mediagolsubiti" %}GOL SUBITI/PARTITA{% endif %}
+                {% if tipo == "mediagolfatti" %}GOL SQUADRA{% endif %}
+                {% if tipo == "mediagolsubiti" %}GOL SUBITI{% endif %}
                 {% if tipo == "percentuale_vittorie" %}% VITTORIE{% endif %}
             </p>
         </div>
-    {% endfor %}
+        {% endfor %}
+    </div>
+
+    <!-- Freccia destra -->
+    <button onclick="scrollRight()" 
+            class="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow z-10">
+        &#10095;
+    </button>
 </div>
 
-<!-- Rimuove scrollbar brutta -->
+<script>
+function scrollLeft() {
+    document.getElementById('scroll-container').scrollBy({ left: -200, behavior: 'smooth' });
+}
+function scrollRight() {
+    document.getElementById('scroll-container').scrollBy({ left: 200, behavior: 'smooth' });
+}
+</script>
+
 <style>
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
 {% else %}
-<p>Nessun dato disponibile per questa classifica.</p>
+<p class="text-center">Nessun dato disponibile per questa classifica.</p>
 {% endif %}
 {% endblock %}
 

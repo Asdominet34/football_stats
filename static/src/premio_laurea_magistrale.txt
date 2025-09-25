@@ -1,0 +1,59 @@
+La mitigazione e l’adattamento ai cambiamenti climatici richiedono strumenti di analisi capaci di guidare scelte politiche e investimenti su orizzonti di lungo periodo. In questo contesto, i modelli energetici e climatici rappresentano una delle principali innovazioni tecnologiche a supporto della transizione, consentendo di esplorare scenari futuri, valutare politiche alternative e ottimizzare l’uso delle risorse. La loro importanza è cruciale soprattutto nei Paesi in rapida crescita, dove le decisioni prese oggi determineranno la sostenibilità del sistema energetico per i decenni a venire.
+
+L’Africa australe è destinata a sperimentare uno dei più rapidi incrementi della domanda elettrica al mondo, con consumi che potrebbero più che raddoppiare entro il 2040. Questa crescita, se non accompagnata da strategie di decarbonizzazione solide e basate su evidenze scientifiche, rischia di amplificare le emissioni climalteranti e aumentare la vulnerabilità delle reti elettriche a fenomeni estremi sempre più frequenti.
+
+I modelli energetici open-source offrono una piattaforma trasparente e replicabile per sviluppare scenari di transizione, ma le loro differenti impostazioni metodologiche possono produrre esiti divergenti, generando incertezza per i decisori. Questa variabilità rischia di compromettere la robustezza delle strategie di lungo periodo e di ostacolare la capacità di attrarre investimenti nelle infrastrutture necessarie.
+
+La nostra tesi di laurea nasce per colmare questa lacuna, confrontando in modo armonizzato due modelli di riferimento e sviluppando un nuovo flusso idrologico per migliorare la rappresentazione dell’idroelettrico in simulazioni ad alta risoluzione. L’obiettivo è fornire scenari più realistici e comparabili, capaci di supportare decisioni strategiche per una transizione energetica sostenibile, resiliente e coerente con gli obiettivi di mitigazione del cambiamento climatico.
+
+
+
+
+L’Africa australe è destinata a sperimentare uno dei più rapidi incrementi della domanda elettrica al mondo, con consumi che potrebbero più che raddoppiare entro il 2040. Questa crescita, se non accompagnata da una strategia di decarbonizzazione solida, rischia di accentuare le emissioni climalteranti e aumentare la vulnerabilità delle reti ai fenomeni climatici estremi.
+I modelli energetici open-source rappresentano un pilastro per orientare le politiche di transizione, ma i diversi approcci metodologici possono produrre esiti divergenti. Questa variabilità rischia di compromettere la robustezza delle strategie di lungo periodo e la capacità di attrarre investimenti nelle infrastrutture necessarie.
+La nostra tesi di laurea nasce per colmare questa lacuna, confrontando in modo armonizzato due modelli di riferimento e sviluppando un nuovo flusso idrologico per migliorare la rappresentazione dell’idroelettrico in simulazioni ad alta risoluzione. L’obiettivo è fornire scenari più realistici e comparabili, capaci di supportare decisioni strategiche per una transizione energetica sostenibile e resiliente.
+
+Per questo confronto sono stati scelti due modelli open-source di riferimento per la pianificazione energetica: OSeMOSYS-TEMBA e PyPSA-Earth.
+OSeMOSYS (Open Source Energy Modelling System) è un modello di pianificazione energetica di lungo periodo, progettato per essere semplice, accessibile e adattabile anche in contesti a risorse limitate. La sua implementazione regionale TEMBA (The Electricity Model Base for Africa), sviluppata dal Joint Research Centre della Commissione Europea, rappresenta i sistemi elettrici di tutti i Paesi africani come nodi di una rete interconnessa e fornisce scenari di sviluppo su tre Shared Socioeconomic Pathways (SSP1-2.6, SSP4-6.0 e SSP5-8.5).
+
+PyPSA-Earth (Python for Power System Analysis – Earth) è invece una piattaforma ad alta risoluzione spaziale e temporale, derivata da PyPSA-Eur, che integra dati geografici, infrastrutturali e climatici per ottimizzare simultaneamente investimenti e operazioni del sistema elettrico. Grazie alla risoluzione oraria e alla modellazione esplicita dei vincoli di rete e dello stoccaggio, PyPSA-Earth permette di catturare la variabilità temporale e le esigenze di flessibilità del sistema, risultando complementare alla visione di lungo termine e più aggregata di OSeMOSYS-TEMBA.
+
+Le principali differenze tra i due modelli risiedono dunque nella risoluzione temporale e spaziale, nel livello di dettaglio operativo e nell’approccio ai dati: OSeMOSYS-TEMBA adotta un’ottimizzazione più semplificata su base stagionale e giorno/notte, mentre PyPSA-Earth offre una rappresentazione realistica del dispacciamento e dei flussi di potenza orari. Il loro confronto armonizzato consente di mettere in evidenza l’impatto che queste scelte di modellazione hanno sugli scenari di transizione energetica e di costruire un quadro più robusto a supporto dei decisori politici.
+
+In una prima fase, sono stati allineati i principali parametri di input tra i due modelli:
+
+Domanda di elettricità per l’intera regione, armonizzata per i tre scenari socio-economici considerati.
+
+Limiti alle emissioni di CO₂, resi coerenti con ciascuno scenario.
+
+Rappresentazione dell’idroelettrico, componente su cui è stato impostato un focus più specifico, poiché tecnologia dallo sviluppo chiave nel continente, uniformando capacità installata esistente e impianti pianificati, sulla base dell’African Hydropower Atlas. 
+
+Questa armonizzazione ha consentito di eseguire un primo confronto tra i due modelli, i cui risultati hanno mostrato forte convergenza sulla predominanza del solare nel mix elettrico al 2050, ma anche divergenze significative nella configurazione complessiva del sistema, nei costi totali e nel ruolo delle tecnologie di flessibilità e del carbone. Alla luce di queste differenze, si è proceduto ad una ulteriore fase di armonizzazione per costi capitali e costi operativi delle tecnologie e sono stati introdotti scenari aggiuntivi per colmare il gap di rappresentazione di alcune tecnologie in OSeMOSYS-TEMBA, come batterie e idrogeno, assenti nella versione di base.
+
+Nonostante queste armonizzazioni, i risultati hanno mantenuto forti divergenze nelle capacità installate future con risultati opposti determinati dai costi o dallo scenario di sensitività specifico. Queste divergenze sono attribuibili principalmente alle differenze strutturali dei due modelli: PyPSA-Earth simula il sistema elettrico ora per ora e tiene conto delle congestioni di rete e della dinamica di carica-scarica degli accumuli, catturando i picchi di domanda e di produzione e quindi valorizzando chiaramente le soluzioni di flessibilità. OSeMOSYS-TEMBA, basato su time-slices stagionali e giorno/notte, non riesce a rappresentare la variabilità intra-giornaliera e tende a privilegiare soluzioni più conservative, installando meno rinnovabili, non avendo a disposizione all'interno del modello tecnologie di stoccaggio.
+
+Un aspetto centrale della tesi è stato lo sviluppo di un nuovo workflow idrologico per PyPSA-Earth, con l’obiettivo di superare le limitazioni dell’attuale metodologia e ottenere una rappresentazione più realistica della generazione idroelettrica. I risultati preliminari del confronto hanno infatti evidenziato una produzione idroelettrica simulata in PyPSA-Earth nettamente inferiore (circa la metà) rispetto a OSeMOSYS-TEMBA, nonostante l’armonizzazione iniziale delle capacità installate e dei fattori di capacità per ogni centrale.
+
+Questa discrepanza è riconducibile alla differente logica con cui i due modelli trattano la disponibilità di acqua:
+
+in OSeMOSYS-TEMBA, essa è fissata da un parametro di disponibilità costante e capacity factor mensili derivati dall’African Hydropower Atlas (AHA);
+
+in PyPSA-Earth, invece, la disponibilità è stimata internamente a partire da dati climatici, con un approccio però poco affidabile che produce valori insensati aggiustati poi sulla base della produzione storica.
+
+Per affrontare questa criticità, è stato implementato un workflow idrologico completamente nuovo, basato sull’integrazione di:
+GloFAS-ERA5, un reanalysis globale delle portate fluviali prodotto operativamente nell’ambito del Global Flood Awareness System (Copernicus – ECMWF), che fornisce dati di portata su scala giornaliera e multi-decennale;
+
+GloHydroRes, un dataset globale che raccoglie dati tecnici dettagliati su oltre 7.700 impianti idroelettrici in 128 Paesi, inclusi parametri come tipologia dell’impianto, salto netto, posizione della diga, area e volume del bacino.
+
+La procedura sviluppata ricostruisce serie temporali di portata in ingresso per ciascun impianto e le converte in potenza elettrica disponibile, tenendo conto della tipologia dell’impianto (run-of-river vs reservoir)
+
+Il workflow è stato testato confrontando i risultati con:
+
+i fattori di capacità dell’AHA per impianti run-of-river,
+
+serie storiche di produzione disponibili per alcuni impianti nel bacino dello Zambesi.
+
+L’accordo tra simulazione e dati di riferimento è risultato variabile, principalmente a causa di bias noti in GloFAS-ERA5 per alcune regioni dell'Africa e della scarsità di dati affidabili di produzione reale dei vari impianti. Nonostante queste difficoltà, il nuovo approccio porta miglioramenti significativi rispetto alla metodologia pre-esistente in PyPSA-Earth, garantendo una rappresentazione fisicamente più consistente della generazione idroelettrica, non basando piu la produzione su valori storici e introducendo parametri specifici per i singoli impianti che prima erano solo stimati a livello nazionale.
+
+Questa analisi dimostra che la risoluzione temporale e la rappresentazione dettagliata della rete sono determinanti per una pianificazione realistica e resiliente della transizione energetica. I risultati sottolineano l’importanza di adottare modelli capaci di cogliere la variabilità oraria e di integrare le tecnologie di accumulo, al fine di evitare sottostime dei fabbisogni di flessibilità e dei costi reali del sistema.
+Il nuovo workflow non si limita a replicare la produzione storica, ma abilita l’espansione endogena della tecnologia idroelettrica all’interno di PyPSA-Earth, aprendo la strada a scenari di lungo periodo più accurati e dinamici. Questo rappresenta un progresso sostanziale per la comunità scientifica: il codice è riutilizzabile in altri studi e regioni, promuove trasparenza e replicabilità, e supporta lo sviluppo di strategie più efficaci per sfruttare il potenziale idroelettrico nel contesto della transizione energetica.

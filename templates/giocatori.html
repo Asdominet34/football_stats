@@ -1,24 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="mb-4">Statistiche Giocatori</h1>
+<div class="max-w-2xl mx-auto">
+    <!-- Titolo -->
+    <h1 class="text-3xl font-bold text-center mb-6">Statistiche Giocatori</h1>
 
-<!-- Barra di ricerca -->
-<div class="mb-3">
-    <input type="text" id="searchInput" class="form-control" placeholder="Cerca giocatore...">
-</div>
+    <!-- Barra di ricerca -->
+    <div class="mb-6">
+        <input type="text" id="searchInput"
+               class="w-full px-4 py-2 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+               placeholder="Cerca giocatore...">
+    </div>
 
-{% if giocatori %}
-    <ul class="list-group" id="giocatoriList">
+    {% if giocatori %}
+    <!-- Lista Giocatori -->
+    <ul id="giocatoriList" class="space-y-3">
         {% for g in giocatori %}
-            <li class="list-group-item">
-                <a href="/giocatore?nome={{ g }}">{{ g }}</a>
-            </li>
+        <li>
+            <a href="/giocatore?nome={{ g }}"
+               class="block bg-white px-4 py-3 rounded-xl shadow hover:shadow-md hover:bg-gray-50 transition">
+                {{ g }}
+            </a>
+        </li>
         {% endfor %}
     </ul>
-{% else %}
-    <p class="text-muted">Nessun giocatore registrato.</p>
-{% endif %}
+    {% else %}
+    <p class="text-center text-gray-500">Nessun giocatore registrato.</p>
+    {% endif %}
+</div>
 
 <!-- Script per filtrare i giocatori -->
 <script>
