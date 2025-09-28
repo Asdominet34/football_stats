@@ -3,16 +3,52 @@
 {% block title %}Menu Classifiche{% endblock %}
 
 {% block content %}
-  <h2>Classifiche disponibili</h2>
-  <ul>
-    <li><a href='/classifiche/gol'>Classifica Gol</a></li>
-    <li><a href='/classifiche/giocate'>Classifica Partite Giocate</a></li>
-    <li><a href='/classifiche/vinte'>Classifica Partite Vinte</a></li>
-    <li><a href='/classifiche/perse'>Classifica Partite Perse</a></li>
-    <li><a href='/classifiche/voto'>Classifica Media Voto (≥ 5 partite)</a></li>
-    <li><a href='/classifiche/mediagol'>Classifica Media Gol Individuali (≥ 5 partite)</a></li>
-    <li><a href='/classifiche/mediagolfatti'>Classifica Media Gol Fatti Squadra (≥ 5 partite)</a></li>
-    <li><a href='/classifiche/mediagolsubiti'>Classifica Media Gol Subiti Squadra (≥ 5 partite)</a></li>
-    <li><a href='/classifiche/percentuale_vittorie'>Classifica Percentuale Vittorie (≥ 5 partite)</a></li>
-  </ul>
+  <h1 class="text-3xl font-bold mb-6 text-center">Classifiche disponibili</h1>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <a href="/classifiche/gol" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Classifica Gol</h2>
+      <p class="text-sm text-gray-500">Chi ha segnato di più?</p>
+    </a>
+
+    <a href="/classifiche/giocate" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Partite Giocate</h2>
+      <p class="text-sm text-gray-500">Chi ha più presenze?</p>
+    </a>
+
+    <a href="/classifiche/vinte" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Partite Vinte</h2>
+      <p class="text-sm text-gray-500">Il giocatore più vincente.</p>
+    </a>
+
+    <a href="/classifiche/perse" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Partite Perse</h2>
+      <p class="text-sm text-gray-500">Chi perde più spesso?</p>
+    </a>
+
+    <a href="/classifiche/voto" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Media Voto</h2>
+      <p class="text-sm text-gray-500">(≥ 5 partite)</p>
+    </a>
+
+    <a href="/classifiche/mediagol" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Media Gol Individuali</h2>
+      <p class="text-sm text-gray-500">(≥ 5 partite)</p>
+    </a>
+
+    <a href="/classifiche/mediagolfatti" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Media Gol Fatti Squadra</h2>
+      <p class="text-sm text-gray-500">(≥ 5 partite)</p>
+    </a>
+
+    <a href="/classifiche/mediagolsubiti" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Media Gol Subiti Squadra</h2>
+      <p class="text-sm text-gray-500">(≥ 5 partite)</p>
+    </a>
+
+    <a href="/classifiche/percentuale_vittorie" class="block bg-white shadow-md hover:shadow-lg rounded-xl p-5 transition">
+      <h2 class="text-lg font-semibold">Percentuale Vittorie</h2>
+      <p class="text-sm text-gray-500">(≥ 5 partite)</p>
+    </a>
+  </div>
 {% endblock %}

@@ -736,3 +736,20 @@ def get_classifica(tipo):
 
     conn.close()
     return titolo, classifica
+
+def get_partite_giocatore(nome):
+    conn = sqlite3.connect("calcetto_stats.db")
+    c = conn.cursor()
+
+    query = """
+        SELECT P.data, P.luogo, G.gol_individuali, G.voto_pagella
+        FROM Giocatori G
+        JOIN Partite P ON G.id_partita = P.id_partita
+        WHERE G.nome = ?
+        ORDER BY P.data
+    """
+    c.execute(query, (nome,))
+    rows = c.fetchall()
+
+    conn.close()
+    return rows

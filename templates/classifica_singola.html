@@ -1,36 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="text-xl font-bold mb-4 text-center">{{ titolo }}</h2>
+<h2 class="text-2xl font-bold mb-6 text-center">{{ titolo }}</h2>
 
 {% if classifica %}
 <div class="relative w-full">
     <!-- Freccia sinistra -->
-    <button onclick="scrollLeft()" 
-            class="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow z-10">
+    <button id="scroll-left" onclick="scrollLeft()" 
+            class="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-700 hover:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full w-10 h-10 flex items-center justify-center shadow z-10">
         &#10094;
     </button>
 
-    <!-- Contenitore orizzontale compatto -->
-    <div id="scroll-container" class="flex flex-row flex-nowrap overflow-x-scroll space-x-4 px-10 no-scrollbar">
+    <!-- Contenitore orizzontale -->
+    <div id="scroll-container" 
+         class="flex flex-row flex-nowrap overflow-x-scroll space-x-6 px-12 no-scrollbar scroll-smooth">
         {% for g, foto in classifica %}
-        <div class="flex-none bg-white shadow-md rounded-xl p-2 w-32 h-56 relative transform transition-transform hover:scale-105">
+        <div class="flex-none bg-white shadow-md rounded-xl p-4 w-72 h-96 relative transform transition-transform hover:scale-105">
 
             <!-- Posizione -->
-            <div class="absolute top-1 left-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            <div class="absolute top-2 left-2 bg-blue-600 text-white text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center">
                 {{ loop.index }}
             </div>
 
             <!-- Nome -->
-            <h3 class="text-sm font-bold text-center mb-1 truncate">{{ g[0] }}</h3>
+            <h3 class="text-base font-bold text-center mb-2 truncate">{{ g[0] }}</h3>
 
-            <!-- Foto più piccola -->
+            <!-- Foto -->
             <img src="{{ url_for('static', filename=foto) }}"
                  alt="Foto di {{ g[0] }}"
-                 class="mx-auto mb-1 w-12 h-12 object-cover rounded-lg">
+                 class="mx-auto mb-4 w-48 h-64 object-cover rounded-lg border shadow">
 
-            <!-- Numero grande e label -->
-            <p class="text-base font-bold text-center leading-none">
+            <!-- Numero grande -->
+            <p class="text-xl font-extrabold text-center leading-tight">
                 {% if tipo == "voto" %}
                     {{ "%.2f"|format(g[5]) }}
                 {% elif tipo == "gol" %}
@@ -51,7 +52,9 @@
                     {{ "%.2f"|format(g[1]) }}%
                 {% endif %}
             </p>
-            <p class="text-sm font-bold text-center uppercase leading-none">
+
+            <!-- Etichetta -->
+            <p class="text-sm font-semibold text-center uppercase mt-1 text-gray-600">
                 {% if tipo == "gol" %}GOL{% endif %}
                 {% if tipo == "giocate" %}PARTITE{% endif %}
                 {% if tipo == "vinte" %}VINTE{% endif %}
@@ -67,19 +70,34 @@
     </div>
 
     <!-- Freccia destra -->
-    <button onclick="scrollRight()" 
-            class="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-700 text-white rounded-full w-8 h-8 flex items-center justify-center shadow z-10">
+    <button id="scroll-right" onclick="scrollRight()" 
+            class="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-700 hover:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full w-10 h-10 flex items-center justify-center shadow z-10">
         &#10095;
     </button>
 </div>
 
 <script>
+const container = document.getElementById('scroll-container');
+const leftBtn = document.getElementById('scroll-left');
+const rightBtn = document.getElementById('scroll-right');
+
+function updateButtons() {
+    const maxScrollLeft = container.scrollWidth - container.clientWidth;
+    leftBtn.disabled = container.scrollLeft <= 0;
+    rightBtn.disabled = container.scrollLeft >= maxScrollLeft - 5;
+}
+
 function scrollLeft() {
-    document.getElementById('scroll-container').scrollBy({ left: -200, behavior: 'smooth' });
+    container.scrollTo({ left: container.scrollLeft - 250, behavior: 'smooth' });
+    setTimeout(updateButtons, 400);
 }
 function scrollRight() {
-    document.getElementById('scroll-container').scrollBy({ left: 200, behavior: 'smooth' });
+    container.scrollTo({ left: container.scrollLeft + 250, behavior: 'smooth' });
+    setTimeout(updateButtons, 400);
 }
+
+updateButtons();
+container.addEventListener('scroll', updateButtons);
 </script>
 
 <style>
@@ -88,7 +106,7 @@ function scrollRight() {
 </style>
 
 {% else %}
-<p class="text-center">Nessun dato disponibile per questa classifica.</p>
+<p class="text-center text-gray-500 mt-6">Nessun dato disponibile per questa classifica.</p>
 {% endif %}
 {% endblock %}
 

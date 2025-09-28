@@ -1,14 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="mb-4">{{ titolo }}</h1>
-    {% if classifica %}
-        <ol class="list-group list-group-numbered">
-            {% for voce in classifica %}
-                <li class="list-group-item">{{ voce }}</li>
-            {% endfor %}
-        </ol>
-    {% else %}
-        <p class="text-muted">Nessun dato disponibile per questa classifica.</p>
-    {% endif %}
+<h1 class="text-3xl font-bold mb-6">{{ titolo }}</h1>
+
+{% if classifica %}
+    <ol class="space-y-2">
+        {% for voce in classifica %}
+            <li class="flex items-center bg-white shadow rounded-lg px-4 py-2">
+                <span class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-bold rounded-full mr-3">
+                    {{ loop.index }}
+                </span>
+                <span class="text-gray-800">{{ voce }}</span>
+            </li>
+        {% endfor %}
+    </ol>
+{% else %}
+    <p class="text-gray-500 italic">Nessun dato disponibile per questa classifica.</p>
+{% endif %}
 {% endblock %}

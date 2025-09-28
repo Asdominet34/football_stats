@@ -84,13 +84,21 @@
                 <span class="font-semibold">Media gol subiti squadra:</span> {{ stats.media_gol_subiti_squadra }}
             </li>
         </ul>
+
+        <!-- Pulsante andamento -->
+        <div class="mt-6 text-center">
+            <a href="{{ url_for('andamento_giocatore', nome=stats.nome) }}"
+               class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow">
+               📊 Vedi andamento
+            </a>
+        </div>
     </div>
 
     <!-- FOTO -->
     <div class="flex items-start justify-center">
         <img src="{{ url_for('static', filename=stats.foto) }}"
              alt="Foto di {{ stats.nome }}"
-             class="rounded-full shadow-lg w-56 h-56 object-cover border-4 border-gray-200">
+             class="rounded-xl shadow-lg max-w-xs max-h-96 border-4 border-gray-200 bg-white">
     </div>
 </div>
 {% else %}
