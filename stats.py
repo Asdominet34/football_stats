@@ -337,7 +337,7 @@ def get_statistiche_giocatore(nome_giocatore):
     conn = sqlite3.connect("calcetto_stats.db")
     c = conn.cursor()
 
-    # 🔎 Recupera le statistiche del giocatore
+    # Recupera le statistiche aggregate del giocatore
     c.execute('''
         SELECT nome, 
                SUM(gol_individuali), 
@@ -356,73 +356,41 @@ def get_statistiche_giocatore(nome_giocatore):
     ''', (nome_giocatore,))
     
     risultato = c.fetchone()
-
-    if not risultato:
-        conn.close()
-        return None
-
-    # Salva statistiche del giocatore in variabili
-    nome, gol_totali, partite_giocate, vinte, pareggiate, perse, media_voto, media_gol, media_gol_fatti, media_gol_subiti, perc_vittorie = risultato
-
-    # 1️⃣ Recupera tutti i giocatori per ranking
-    c.execute('''
-        SELECT nome, 
-               SUM(gol_individuali) AS gol_totali,
-               SUM(partite_giocate) AS partite_giocate,
-               SUM(partite_vinte) AS partite_vinte,
-               AVG(voto_pagella) AS media_voto,
-               AVG(gol_individuali) AS media_gol,
-               AVG(gol_fatti_squadra) AS media_gol_fatti_squadra,
-               AVG(gol_subiti_squadra) AS media_gol_subiti_squadra
-        FROM Giocatori
-        GROUP BY nome
-    ''')
-    tutti_giocatori = c.fetchall()
-
     conn.close()
 
-    # 📊 Calcola ranking
-    def trova_posizione(nome, ranking):
-        for pos, g in enumerate(ranking, start=1):
-            if g[0] == nome:
-                return pos
+    if not risultato:
         return None
 
-    # 🔢 Classifica per gol totali (su tutti)
-    ranking_gol = sorted(tutti_giocatori, key=lambda x: x[1] or 0, reverse=True)
-    pos_gol = trova_posizione(nome, ranking_gol)
+    # unpack
+    nome, gol_totali, partite_giocate, vinte, pareggiate, perse, media_voto, media_gol, media_gol_fatti, media_gol_subiti, perc_vittorie = risultato
 
-    # 🎯 Filtra solo giocatori con almeno 5 partite
-    giocatori_min5 = [g for g in tutti_giocatori if g[2] and g[2] >= 5]
+    # funzione di utilità: trova posizione in classifica
+    def trova_posizione(nome, classifica):
+        for pos, (row, foto) in enumerate(classifica, start=1):
+            if row[0] == nome:
+                return pos, len(classifica)
+        return None, len(classifica)
 
-    # Ranking per statistiche medie (solo >= 5 partite)
-    ranking_media_voto = sorted(giocatori_min5, key=lambda x: x[3] or 0, reverse=True)
-    ranking_media_gol = sorted(giocatori_min5, key=lambda x: x[4] or 0, reverse=True)
-    ranking_media_gol_fatti = sorted(giocatori_min5, key=lambda x: x[5] or 0, reverse=True)
-    ranking_media_gol_subiti = sorted(giocatori_min5, key=lambda x: x[6] or 0)  # crescente (meno subiti = meglio)
+    # ranking coerenti con get_classifica()
+    _, class_gol = get_classifica("gol")
+    pos_gol, tot_gol = trova_posizione(nome, class_gol)
 
-    pos_media_voto = trova_posizione(nome, ranking_media_voto)
-    pos_media_gol = trova_posizione(nome, ranking_media_gol)
-    pos_media_gol_fatti = trova_posizione(nome, ranking_media_gol_fatti)
-    pos_media_gol_subiti = trova_posizione(nome, ranking_media_gol_subiti)
+    _, class_voto = get_classifica("voto")
+    pos_voto, tot_voto = trova_posizione(nome, class_voto)
 
-    # 🏆 Classifica per percentuale vittorie (solo >= 5 partite)
-    ranking_vittorie = sorted(
-        [(g[0], (g[2] and g[2] > 0 and (g[3] / g[2] * 100)) or 0) for g in giocatori_min5],
-        key=lambda x: x[1],
-        reverse=True
-    )
-    pos_percentuale_vittorie = trova_posizione(nome, ranking_vittorie)
+    _, class_mediagol = get_classifica("mediagol")
+    pos_mediagol, tot_mediagol = trova_posizione(nome, class_mediagol)
 
-    # 📐 Totali per calcolare l’ultimo 25%
-    totale_giocatori_gol = len(ranking_gol)
-    totale_giocatori_media_voto = len(ranking_media_voto)
-    totale_giocatori_media_gol = len(ranking_media_gol)
-    totale_giocatori_media_gol_fatti = len(ranking_media_gol_fatti)
-    totale_giocatori_media_gol_subiti = len(ranking_media_gol_subiti)
-    totale_giocatori_percentuale_vittorie = len(ranking_vittorie)
+    _, class_mediagolfatti = get_classifica("mediagolfatti")
+    pos_mediagolfatti, tot_mediagolfatti = trova_posizione(nome, class_mediagolfatti)
 
-    # 🔎 Cerca la foto del giocatore
+    _, class_mediagolsubiti = get_classifica("mediagolsubiti")
+    pos_mediagolsubiti, tot_mediagolsubiti = trova_posizione(nome, class_mediagolsubiti)
+
+    _, class_percvitt = get_classifica("percentuale_vittorie")
+    pos_percvitt, tot_percvitt = trova_posizione(nome, class_percvitt)
+
+    # foto giocatore (stessa logica tua)
     nome_file_base = nome.lower().strip().replace(" ", "_")
     cartella_foto = os.path.join("static", "img", "giocatori")
     foto_trovata = None
@@ -434,12 +402,12 @@ def get_statistiche_giocatore(nome_giocatore):
     if not foto_trovata:
         foto_trovata = "img/placeholder.jpg"
 
-    # 📊 Restituisce tutte le statistiche + ranking + totali
+    # ritorna tutto
     return {
         "nome": nome,
         "gol_totali": gol_totali,
         "ranking_gol": pos_gol,
-        "totale_giocatori_gol": totale_giocatori_gol,
+        "totale_giocatori_gol": tot_gol,
 
         "partite_giocate": partite_giocate,
         "partite_vinte": vinte,
@@ -447,24 +415,24 @@ def get_statistiche_giocatore(nome_giocatore):
         "partite_perse": perse,
 
         "media_voto": round(media_voto, 2) if media_voto else 0,
-        "ranking_media_voto": pos_media_voto,
-        "totale_giocatori_media_voto": totale_giocatori_media_voto,
+        "ranking_media_voto": pos_voto,
+        "totale_giocatori_media_voto": tot_voto,
 
         "media_gol": round(media_gol, 2) if media_gol else 0,
-        "ranking_media_gol": pos_media_gol,
-        "totale_giocatori_media_gol": totale_giocatori_media_gol,
+        "ranking_media_gol": pos_mediagol,
+        "totale_giocatori_media_gol": tot_mediagol,
 
         "media_gol_fatti_squadra": round(media_gol_fatti, 2) if media_gol_fatti else 0,
-        "ranking_media_gol_fatti": pos_media_gol_fatti,
-        "totale_giocatori_media_gol_fatti": totale_giocatori_media_gol_fatti,
+        "ranking_media_gol_fatti": pos_mediagolfatti,
+        "totale_giocatori_media_gol_fatti": tot_mediagolfatti,
 
         "media_gol_subiti_squadra": round(media_gol_subiti, 2) if media_gol_subiti else 0,
-        "ranking_media_gol_subiti": pos_media_gol_subiti,
-        "totale_giocatori_media_gol_subiti": totale_giocatori_media_gol_subiti,
+        "ranking_media_gol_subiti": pos_mediagolsubiti,
+        "totale_giocatori_media_gol_subiti": tot_mediagolsubiti,
 
         "percentuale_vittorie": round(perc_vittorie, 2) if perc_vittorie else 0,
-        "ranking_percentuale_vittorie": pos_percentuale_vittorie,
-        "totale_giocatori_percentuale_vittorie": totale_giocatori_percentuale_vittorie,
+        "ranking_percentuale_vittorie": pos_percvitt,
+        "totale_giocatori_percentuale_vittorie": tot_percvitt,
 
         "foto": foto_trovata
     }
@@ -737,19 +705,63 @@ def get_classifica(tipo):
     conn.close()
     return titolo, classifica
 
-def get_partite_giocatore(nome):
+def get_andamento_giocatore(nome):
     conn = sqlite3.connect("calcetto_stats.db")
     c = conn.cursor()
 
-    query = """
-        SELECT P.data, P.luogo, G.gol_individuali, G.voto_pagella
-        FROM Giocatori G
-        JOIN Partite P ON G.id_partita = P.id_partita
-        WHERE G.nome = ?
-        ORDER BY P.data
-    """
-    c.execute(query, (nome,))
-    rows = c.fetchall()
+    # tutte le partite ordinate per data
+    c.execute("SELECT id_partita, data, gol_squadra_chiari, gol_squadra_scuri FROM Partite ORDER BY data")
+    tutte = c.fetchall()
+
+    andamento = []
+    for partita in tutte:
+        id_partita, data, gol_chiari, gol_scuri = partita
+
+        # cerco il giocatore in quella partita
+        c.execute("""
+            SELECT gol_individuali, voto_pagella, squadra
+            FROM Giocatori
+            WHERE id_partita = ? AND nome = ?
+        """, (id_partita, nome))
+        g = c.fetchone()
+
+        if g:  # ha giocato
+            gol_ind, voto, squadra = g
+
+            # calcolo risultato personale
+            if squadra == "Chiari":
+                if gol_chiari > gol_scuri:
+                    risultato = "V"
+                elif gol_chiari < gol_scuri:
+                    risultato = "S"
+                else:
+                    risultato = "P"
+            elif squadra == "Scuri":
+                if gol_scuri > gol_chiari:
+                    risultato = "V"
+                elif gol_scuri < gol_chiari:
+                    risultato = "S"
+                else:
+                    risultato = "P"
+            else:
+                risultato = "-"
+
+            andamento.append({
+                "id_partita": id_partita,
+                "data": data,
+                "gol_individuali": gol_ind,
+                "voto_pagella": voto,
+                "risultato": risultato
+            })
+
+        else:  # assente
+            andamento.append({
+                "id_partita": id_partita,
+                "data": data,
+                "gol_individuali": None,
+                "voto_pagella": None,
+                "risultato": "-"
+            })
 
     conn.close()
-    return rows
+    return andamento

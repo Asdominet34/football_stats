@@ -1,62 +1,105 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="text-2xl font-bold mb-6 text-center">Andamento di {{ nome }}</h2>
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4 flex items-center space-x-4">
+        <span>Andamento di {{ nome }}</span>
 
-<div class="bg-white shadow-lg rounded-xl p-6">
-    <canvas id="andamentoChart" class="w-full h-96"></canvas>
+        <!-- Risultati (V P S -) -->
+        <div class="flex space-x-1">
+            {% for r in risultati %}
+                {% if r == "V" %}
+                    <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">{{ r }}</span>
+                {% elif r == "P" %}
+                    <span class="bg-yellow-500 text-white text-xs px-2 py-1 rounded">{{ r }}</span>
+                {% elif r == "S" %}
+                    <span class="bg-red-500 text-white text-xs px-2 py-1 rounded">{{ r }}</span>
+                {% else %}
+                    <span class="bg-gray-400 text-white text-xs px-2 py-1 rounded">-</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </h1>
+
+    <!-- Grafico Voti -->
+    <div class="bg-white shadow rounded-lg p-4 mb-6">
+        <h2 class="text-lg font-semibold mb-2">Andamento Voto</h2>
+        <canvas id="graficoVoti"></canvas>
+    </div>
+
+    <!-- Grafico Gol -->
+    <div class="bg-white shadow rounded-lg p-4">
+        <h2 class="text-lg font-semibold mb-2">Andamento Gol</h2>
+        <canvas id="graficoGol"></canvas>
+    </div>
 </div>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('andamentoChart').getContext('2d');
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: {{ labels|tojson }},
-        datasets: [
-            {
-                label: 'Gol',
-                data: {{ gol|tojson }},
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                tension: 0.3,
-                yAxisID: 'y'
-            },
-            {
+    const labels = {{ date|tojson }};
+    const votiRaw = {{ voti|tojson }};
+    const golRaw = {{ gol|tojson }};
+
+    // Voti: null se assente → buco
+    const voti = votiRaw.map(v => v === null ? null : v);
+
+    // Gol: distinguere tra assente (null) e 0 reale
+    const gol = golRaw.map(g => g === null ? null : g);
+
+    // Grafico voti
+    new Chart(document.getElementById('graficoVoti'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
                 label: 'Voto',
-                data: {{ voti|tojson }},
-                borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                data: voti,
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0,0,255,0.2)',
                 tension: 0.3,
-                yAxisID: 'y1'
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        interaction: {
-            mode: 'index',
-            intersect: false
+                fill: true,
+                spanGaps: false,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
         },
-        stacked: false,
-        scales: {
-            y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-                title: { display: true, text: 'Gol' }
-            },
-            y1: {
-                type: 'linear',
-                display: true,
-                position: 'right',
-                grid: { drawOnChartArea: false },
-                title: { display: true, text: 'Voto' }
+        options: {
+            scales: {
+                y: {
+                    min: 4,
+                    max: 10,
+                    ticks: { stepSize: 1 }
+                }
             }
         }
-    }
-});
+    });
+
+    // Grafico gol
+    new Chart(document.getElementById('graficoGol'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Gol',
+                data: gol,
+                borderColor: 'green',
+                backgroundColor: 'rgba(0,255,0,0.2)',
+                tension: 0.3,
+                fill: true,
+                spanGaps: false,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    min: 0,
+                    max: 6,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
 </script>
 {% endblock %}

@@ -1,4 +1,4 @@
-Sezione giocatori: Aggiungere andamento temporaneo e o ultime partite, ancora errore classifica gol subiti ranking
+Sezione giocatori:
 
 Sezione classifiche: va sistemata la freccia a sx
 

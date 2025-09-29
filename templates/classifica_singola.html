@@ -5,15 +5,10 @@
 
 {% if classifica %}
 <div class="relative w-full">
-    <!-- Freccia sinistra -->
-    <button id="scroll-left" onclick="scrollLeft()" 
-            class="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-700 hover:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full w-10 h-10 flex items-center justify-center shadow z-10">
-        &#10094;
-    </button>
 
     <!-- Contenitore orizzontale -->
-    <div id="scroll-container" 
-         class="flex flex-row flex-nowrap overflow-x-scroll space-x-6 px-12 no-scrollbar scroll-smooth">
+    <div id="scroll-container"
+         class="flex flex-row flex-nowrap overflow-x-auto space-x-6 px-6 py-4 no-scrollbar scroll-smooth">
         {% for g, foto in classifica %}
         <div class="flex-none bg-white shadow-md rounded-xl p-4 w-72 h-96 relative transform transition-transform hover:scale-105">
 
@@ -23,7 +18,7 @@
             </div>
 
             <!-- Nome -->
-            <h3 class="text-base font-bold text-center mb-2 truncate">{{ g[0] }}</h3>
+            <h3 class="text-base font-bold text-center mb-2 truncate" title="{{ g[0] }}">{{ g[0] }}</h3>
 
             <!-- Foto -->
             <img src="{{ url_for('static', filename=foto) }}"
@@ -33,23 +28,23 @@
             <!-- Numero grande -->
             <p class="text-xl font-extrabold text-center leading-tight">
                 {% if tipo == "voto" %}
-                    {{ "%.2f"|format(g[5]) }}
+                    {{ "%.2f"|format(g[5]) if g|length > 5 else "-" }}
                 {% elif tipo == "gol" %}
-                    {{ g[1] }}
+                    {{ g[1] if g|length > 1 else "-" }}
                 {% elif tipo == "giocate" %}
-                    {{ g[2] }}
+                    {{ g[2] if g|length > 2 else "-" }}
                 {% elif tipo == "vinte" %}
-                    {{ g[3] }}
+                    {{ g[3] if g|length > 3 else "-" }}
                 {% elif tipo == "perse" %}
-                    {{ g[4] }}
+                    {{ g[4] if g|length > 4 else "-" }}
                 {% elif tipo == "mediagol" %}
-                    {{ "%.2f"|format(g[6]) }}
+                    {{ "%.2f"|format(g[6]) if g|length > 6 else "-" }}
                 {% elif tipo == "mediagolfatti" %}
-                    {{ "%.2f"|format(g[7]) }}
+                    {{ "%.2f"|format(g[7]) if g|length > 7 else "-" }}
                 {% elif tipo == "mediagolsubiti" %}
-                    {{ "%.2f"|format(g[8]) }}
+                    {{ "%.2f"|format(g[8]) if g|length > 8 else "-" }}
                 {% elif tipo == "percentuale_vittorie" %}
-                    {{ "%.2f"|format(g[1]) }}%
+                    {{ "%.2f"|format(g[1]) if g|length > 1 else "-" }}%
                 {% endif %}
             </p>
 
@@ -69,44 +64,116 @@
         {% endfor %}
     </div>
 
-    <!-- Freccia destra -->
-    <button id="scroll-right" onclick="scrollRight()" 
-            class="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-700 hover:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full w-10 h-10 flex items-center justify-center shadow z-10">
-        &#10095;
-    </button>
+    <!-- Barra di scorrimento (range) -->
+    <div class="mt-4 px-6">
+        <input id="scroll-slider" type="range" min="0" value="0" step="1"
+               class="w-full h-2 bg-gray-200 rounded-lg appearance-none" />
+    </div>
 </div>
 
 <script>
-const container = document.getElementById('scroll-container');
-const leftBtn = document.getElementById('scroll-left');
-const rightBtn = document.getElementById('scroll-right');
+(function(){
+    const container = document.getElementById('scroll-container');
+    const slider = document.getElementById('scroll-slider');
 
-function updateButtons() {
-    const maxScrollLeft = container.scrollWidth - container.clientWidth;
-    leftBtn.disabled = container.scrollLeft <= 0;
-    rightBtn.disabled = container.scrollLeft >= maxScrollLeft - 5;
-}
+    if (!container || !slider) return;
 
-function scrollLeft() {
-    container.scrollTo({ left: container.scrollLeft - 250, behavior: 'smooth' });
-    setTimeout(updateButtons, 400);
-}
-function scrollRight() {
-    container.scrollTo({ left: container.scrollLeft + 250, behavior: 'smooth' });
-    setTimeout(updateButtons, 400);
-}
+    function updateSliderMax() {
+        // calcola max scroll possibile
+        const max = Math.max(0, container.scrollWidth - container.clientWidth);
+        slider.max = Math.ceil(max);
+        // se il valore attuale supera il max (resize), fallback a max
+        if (Number(slider.value) > max) slider.value = max;
+    }
 
-updateButtons();
-container.addEventListener('scroll', updateButtons);
+    // Quando si muove lo slider, scrolla il container
+    slider.addEventListener('input', () => {
+        container.scrollLeft = Number(slider.value);
+    });
+
+    // Quando si scrolla manualmente aggiornare il valore dello slider
+    container.addEventListener('scroll', () => {
+        slider.value = Math.round(container.scrollLeft);
+    });
+
+    // Ricalcola max in questi eventi utili
+    window.addEventListener('resize', updateSliderMax);
+    // Aggiorna dopo il caricamento immagini (potrebbero modificare scrollWidth)
+    window.addEventListener('load', () => {
+        // piccolo ritardo per essere sicuro che le immagini siano calcolate
+        setTimeout(updateSliderMax, 100);
+    });
+
+    // Se ci sono immagini dinamiche (o molte), aggiorna ogni volta che un'immagine finisce il load
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach(img => {
+        if (!img.complete) {
+            img.addEventListener('load', updateSliderMax);
+            img.addEventListener('error', updateSliderMax);
+        }
+    });
+
+    // inizializza
+    updateSliderMax();
+
+    // Supporto extra: drag-to-scroll (trascinare le card per scorrere)
+    let isDown = false, startX, scrollLeft;
+    container.addEventListener('mousedown', (e) => {
+        isDown = true;
+        container.classList.add('cursor-grabbing');
+        startX = e.pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
+    });
+    container.addEventListener('mouseleave', () => {
+        isDown = false;
+        container.classList.remove('cursor-grabbing');
+    });
+    container.addEventListener('mouseup', () => {
+        isDown = false;
+        container.classList.remove('cursor-grabbing');
+    });
+    container.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - container.offsetLeft;
+        const walk = (x - startX) * 1; // scroll speed
+        container.scrollLeft = scrollLeft - walk;
+    });
+
+})();
 </script>
 
 <style>
+/* nascondi scrollbar nativa (solo estetica: la barra range svolge il controllo) */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* stile thumb del range */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  background: #e5e7eb; /* gray-200 */
+  border-radius: 9999px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #1f2937; /* gray-800 */
+  margin-top: -5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+input[type="range"]::-moz-range-track { height:8px; background:#e5e7eb; border-radius:9999px; }
+input[type="range"]::-moz-range-thumb { width:18px; height:18px; border-radius:9999px; background:#1f2937; }
 </style>
 
 {% else %}
 <p class="text-center text-gray-500 mt-6">Nessun dato disponibile per questa classifica.</p>
 {% endif %}
 {% endblock %}
-

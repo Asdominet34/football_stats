@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from stats import get_statistiche_giocatore, get_lista_giocatori, get_partite, get_classifica, get_statistiche_coppia, get_dettaglio_partita, get_partite_giocatore
+from stats import get_statistiche_giocatore, get_lista_giocatori, get_partite, get_classifica, get_statistiche_coppia, get_dettaglio_partita, get_andamento_giocatore
 
 app = Flask(__name__)
 
@@ -36,14 +36,14 @@ def giocatore():
 
 @app.route("/giocatore/<nome>/andamento")
 def andamento_giocatore(nome):
-    partite = get_partite_giocatore(nome)
+    partite = get_andamento_giocatore(nome)
 
-    # Preparo i dati per Chart.js
-    labels = [p[0] for p in partite]  # date delle partite
-    gol = [p[2] for p in partite]     # gol individuali
-    voti = [p[3] for p in partite]    # voti pagella
+    date = [p["data"] for p in partite]
+    gol = [p["gol_individuali"] for p in partite]
+    voti = [p["voto_pagella"] for p in partite]  # contiene anche None
+    risultati = [p["risultato"] for p in partite]  # V/P/S o -
 
-    return render_template("andamento.html", nome=nome, labels=labels, gol=gol, voti=voti)
+    return render_template("andamento.html", nome=nome, date=date, gol=gol, voti=voti, risultati=risultati)
 
 @app.route("/classifiche")
 def menu_classifiche():
