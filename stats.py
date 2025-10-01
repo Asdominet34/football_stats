@@ -1,10 +1,15 @@
 import os
-import sqlite3
+import psycopg2
 from db import DB_NAME
 
+def get_connection():
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        raise Exception("DATABASE_URL non trovata, imposta la variabile su Render")
+    return psycopg2.connect(db_url, sslmode="require")
 
 def mostra_statistiche():
-    conn = sqlite3.connect("calcetto_stats.db")
+    conn = get_connection()
     c = conn.cursor()
 
     while True:
@@ -40,7 +45,7 @@ def mostra_statistiche():
                        AVG(gol_subiti_squadra),
                        CAST(SUM(partite_vinte) AS REAL) / SUM(partite_giocate) * 100 AS percentuale_vittorie
                 FROM Giocatori
-                WHERE nome = ?
+                WHERE nome = %s
                 GROUP BY nome
                 ''', (nome_giocatore,))
                 risultato = c.fetchone()
@@ -151,7 +156,7 @@ def mostra_statistiche():
            FROM Giocatori AS g1
            JOIN Giocatori AS g2 
            ON g1.id_partita = g2.id_partita AND g1.squadra = g2.squadra
-           WHERE g1.nome = ? AND g2.nome = ?
+           WHERE g1.nome = %s AND g2.nome = %s
            ''', (nome_giocatore1, nome_giocatore2))
            partite_insieme = c.fetchone()[0]
 
@@ -163,7 +168,7 @@ def mostra_statistiche():
              SELECT COUNT(*) 
              FROM Giocatori AS g1
              JOIN Giocatori AS g2 ON g1.id_partita = g2.id_partita
-             WHERE g1.nome = ? AND g2.nome = ? AND g1.squadra = g2.squadra AND g1.partite_vinte = 1
+             WHERE g1.nome = %s AND g2.nome = %s AND g1.squadra = g2.squadra AND g1.partite_vinte = 1
              ''', (nome_giocatore1, nome_giocatore2))
              vittorie_insieme = c.fetchone()[0]
              percentuale_vittorie_insieme = (vittorie_insieme / partite_insieme) * 100
@@ -174,7 +179,7 @@ def mostra_statistiche():
              FROM Giocatori AS g1
              JOIN Giocatori AS g2 
              ON g1.id_partita = g2.id_partita AND g1.squadra = g2.squadra
-             WHERE g1.nome = ? AND g2.nome = ?
+             WHERE g1.nome = %s AND g2.nome = %s
              ''', (nome_giocatore1, nome_giocatore2))
              media_gol_insieme = c.fetchone()
              media_gol_insieme = (round(media_gol_insieme[0], 2), round(media_gol_insieme[1], 2))
@@ -186,13 +191,13 @@ def mostra_statistiche():
               CAST(SUM(partite_vinte) AS REAL) / SUM(partite_giocate) * 100 AS percentuale_vittorie,
               AVG(gol_individuali)
             FROM Giocatori
-            WHERE nome = ? 
+            WHERE nome = %s 
             AND id_partita NOT IN (
                 SELECT DISTINCT g1.id_partita
                 FROM Giocatori AS g1
                 JOIN Giocatori AS g2 
                 ON g1.id_partita = g2.id_partita AND g1.squadra = g2.squadra
-                WHERE g1.nome = ? AND g2.nome = ?
+                WHERE g1.nome = %s AND g2.nome = %s
              )
              ''', (nome_giocatore1, nome_giocatore1, nome_giocatore2))
              stats_no_insieme1 = c.fetchone()
@@ -206,13 +211,13 @@ def mostra_statistiche():
               CAST(SUM(partite_vinte) AS REAL) / SUM(partite_giocate) * 100 AS percentuale_vittorie,
               AVG(gol_individuali)
             FROM Giocatori
-            WHERE nome = ? 
+            WHERE nome = %s 
             AND id_partita NOT IN (
               SELECT DISTINCT g1.id_partita
               FROM Giocatori AS g1
               JOIN Giocatori AS g2 
               ON g1.id_partita = g2.id_partita AND g1.squadra = g2.squadra
-              WHERE g1.nome = ? AND g2.nome = ?
+              WHERE g1.nome = %s AND g2.nome = %s
              )
              ''', (nome_giocatore2, nome_giocatore2, nome_giocatore1))
              stats_no_insieme2 = c.fetchone()
@@ -283,7 +288,7 @@ def mostra_statistiche():
                                AVG(voto_pagella) AS media_voto
                         FROM Giocatori
                         GROUP BY nome
-                        HAVING SUM(partite_giocate) >= ?
+                        HAVING SUM(partite_giocate) >= %s
                         '''
 
                         c.execute(query_min_partite, (min_partite,))
@@ -334,7 +339,7 @@ def mostra_statistiche():
     conn.close()
 
 def get_statistiche_giocatore(nome_giocatore):
-    conn = sqlite3.connect("calcetto_stats.db")
+    conn = get_connection()
     c = conn.cursor()
 
     # Recupera le statistiche aggregate del giocatore
@@ -351,7 +356,7 @@ def get_statistiche_giocatore(nome_giocatore):
                AVG(gol_subiti_squadra),
                CAST(SUM(partite_vinte) AS REAL) / SUM(partite_giocate) * 100 AS percentuale_vittorie
         FROM Giocatori
-        WHERE nome = ?
+        WHERE nome = %s
         GROUP BY nome
     ''', (nome_giocatore,))
     
@@ -438,7 +443,7 @@ def get_statistiche_giocatore(nome_giocatore):
     }
 
 def get_statistiche_coppia(nome1, nome2):
-    conn = sqlite3.connect("calcetto_stats.db")
+    conn = get_connection()
     c = conn.cursor()
 
     # Partite giocate insieme
@@ -447,7 +452,7 @@ def get_statistiche_coppia(nome1, nome2):
         FROM Giocatori AS g1
         JOIN Giocatori AS g2 
         ON g1.id_partita = g2.id_partita AND g1.squadra = g2.squadra
-        WHERE g1.nome = ? AND g2.nome = ?
+        WHERE g1.nome = %s AND g2.nome = %s
     ''', (nome1, nome2))
     partite_insieme = c.fetchone()[0]
 
@@ -460,7 +465,7 @@ def get_statistiche_coppia(nome1, nome2):
         SELECT COUNT(*) 
         FROM Giocatori AS g1
         JOIN Giocatori AS g2 ON g1.id_partita = g2.id_partita
-        WHERE g1.nome = ? AND g2.nome = ? AND g1.squadra = g2.squadra AND g1.partite_vinte = 1
+        WHERE g1.nome = %s AND g2.nome = %s AND g1.squadra = g2.squadra AND g1.partite_vinte = 1
     ''', (nome1, nome2))
     vittorie_insieme = c.fetchone()[0]
     percentuale_vittorie_insieme = round((vittorie_insieme / partite_insieme) * 100, 2)
@@ -471,7 +476,7 @@ def get_statistiche_coppia(nome1, nome2):
         FROM Giocatori AS g1
         JOIN Giocatori AS g2 
         ON g1.id_partita = g2.id_partita AND g1.squadra = g2.squadra
-        WHERE g1.nome = ? AND g2.nome = ?
+        WHERE g1.nome = %s AND g2.nome = %s
     ''', (nome1, nome2))
     media_gol_insieme = c.fetchone()
     media_gol_insieme = (
@@ -485,13 +490,13 @@ def get_statistiche_coppia(nome1, nome2):
             CAST(SUM(partite_vinte) AS REAL) / SUM(partite_giocate) * 100,
             AVG(gol_individuali)
         FROM Giocatori
-        WHERE nome = ? 
+        WHERE nome = %s 
         AND id_partita NOT IN (
             SELECT DISTINCT g1.id_partita
             FROM Giocatori AS g1
             JOIN Giocatori AS g2 
             ON g1.id_partita = g2.id_partita AND g1.squadra = g2.squadra
-            WHERE g1.nome = ? AND g2.nome = ?
+            WHERE g1.nome = %s AND g2.nome = %s
         )
     ''', (nome1, nome1, nome2))
     stats_no_insieme1 = c.fetchone()
@@ -506,13 +511,13 @@ def get_statistiche_coppia(nome1, nome2):
             CAST(SUM(partite_vinte) AS REAL) / SUM(partite_giocate) * 100,
             AVG(gol_individuali)
         FROM Giocatori
-        WHERE nome = ? 
+        WHERE nome = %s 
         AND id_partita NOT IN (
             SELECT DISTINCT g1.id_partita
             FROM Giocatori AS g1
             JOIN Giocatori AS g2 
             ON g1.id_partita = g2.id_partita AND g1.squadra = g2.squadra
-            WHERE g1.nome = ? AND g2.nome = ?
+            WHERE g1.nome = %s AND g2.nome = %s
         )
     ''', (nome2, nome2, nome1))
     stats_no_insieme2 = c.fetchone()
@@ -535,7 +540,7 @@ def get_statistiche_coppia(nome1, nome2):
     }
 
 def get_lista_giocatori():
-    conn = sqlite3.connect("calcetto_stats.db")
+    conn = get_connection()
     c = conn.cursor()
 
     c.execute("SELECT DISTINCT nome FROM Giocatori ORDER BY nome")
@@ -545,7 +550,7 @@ def get_lista_giocatori():
     return [r[0] for r in risultati]
 
 def get_partite():
-    conn = sqlite3.connect("calcetto_stats.db")
+    conn = get_connection()
     c = conn.cursor()
 
     c.execute("SELECT * FROM Partite ORDER BY data DESC")
@@ -565,14 +570,14 @@ def get_partite():
     return risultati
 
 def get_dettaglio_partita(id_partita):
-    conn = sqlite3.connect("calcetto_stats.db")
+    conn = get_connection()
     c = conn.cursor()
 
     # Info della partita
     c.execute("""
         SELECT id_partita, data, luogo, gol_squadra_chiari, gol_squadra_scuri
         FROM Partite
-        WHERE id_partita = ?
+        WHERE id_partita = %s
     """, (id_partita,))
     partita = c.fetchone()
 
@@ -580,7 +585,7 @@ def get_dettaglio_partita(id_partita):
     c.execute("""
         SELECT nome, gol_individuali, voto_pagella
         FROM Giocatori
-        WHERE id_partita = ? AND squadra = 'Chiari'
+        WHERE id_partita = %s AND squadra = 'Chiari'
     """, (id_partita,))
     giocatori_chiari = c.fetchall()
 
@@ -588,7 +593,7 @@ def get_dettaglio_partita(id_partita):
     c.execute("""
         SELECT nome, gol_individuali, voto_pagella
         FROM Giocatori
-        WHERE id_partita = ? AND squadra = 'Scuri'
+        WHERE id_partita = %s AND squadra = 'Scuri'
     """, (id_partita,))
     giocatori_scuri = c.fetchall()
 
@@ -596,7 +601,7 @@ def get_dettaglio_partita(id_partita):
     return partita, giocatori_chiari, giocatori_scuri
 
 def get_classifica(tipo):
-    conn = sqlite3.connect("calcetto_stats.db")
+    conn = get_connection()
     c = conn.cursor()
 
     # Query base
@@ -706,7 +711,7 @@ def get_classifica(tipo):
     return titolo, classifica
 
 def get_andamento_giocatore(nome):
-    conn = sqlite3.connect("calcetto_stats.db")
+    conn = get_connection()
     c = conn.cursor()
 
     # tutte le partite ordinate per data
@@ -721,7 +726,7 @@ def get_andamento_giocatore(nome):
         c.execute("""
             SELECT gol_individuali, voto_pagella, squadra
             FROM Giocatori
-            WHERE id_partita = ? AND nome = ?
+            WHERE id_partita = %s AND nome = %s
         """, (id_partita, nome))
         g = c.fetchone()
 
